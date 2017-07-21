@@ -1,9 +1,9 @@
-package de.fashionid.funorm
+package de.dangoe.freda
 
 import java.sql.SQLException
 import java.util.UUID
 
-import de.fashionid.funorm.util.TestDatabase
+import de.dangoe.freda.util.TestDatabase
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}

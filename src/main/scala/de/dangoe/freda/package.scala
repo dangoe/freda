@@ -1,8 +1,8 @@
-package de.fashionid
+package de.dangoe
 
 import anorm._
 
-package object funorm {
+package object freda {
 
   import scala.language.implicitConversions
 

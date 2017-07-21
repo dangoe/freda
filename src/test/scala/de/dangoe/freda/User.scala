@@ -1,4 +1,4 @@
-package de.fashionid.funorm
+package de.dangoe.freda
 
 import anorm._
 

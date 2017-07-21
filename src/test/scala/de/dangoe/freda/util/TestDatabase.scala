@@ -1,7 +1,7 @@
-package de.fashionid.funorm.util
+package de.dangoe.freda.util
 
 import com.zaxxer.hikari.HikariConfig
-import de.fashionid.funorm.Database
+import de.dangoe.freda.Database
 import org.hsqldb.server.Server
 import org.scalatest.{BeforeAndAfterAll, TestSuite}
 

@@ -1,9 +1,9 @@
-package de.fashionid.funorm
+package de.dangoe.freda
 
 import java.sql.Connection
 
 import anorm._
-import de.fashionid.funorm.Query.Result
+import Query.Result
 
 trait Query[+A] {
 
