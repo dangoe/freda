@@ -15,8 +15,7 @@
   */
 package de.dangoe.freda.util
 
-import com.zaxxer.hikari.HikariConfig
-import de.dangoe.freda.Database
+import de.dangoe.freda.{ConnectionPoolSettings, ConnectionSettings, Database}
 import org.hsqldb.server.Server
 import org.scalatest.{BeforeAndAfterAll, TestSuite}
 
@@ -36,12 +35,10 @@ trait TestDatabase extends BeforeAndAfterAll {
     server.setPort(9001) // TODO Get available local port
     server.start()
 
-    val config: HikariConfig = new HikariConfig
-    config.setJdbcUrl("jdbc:hsqldb:mem:test")
-    config.setUsername("sa")
-    config.setMaximumPoolSize(1)
-
-    database = Database(config)
+    database = Database(
+      ConnectionSettings(jdbcUrl = "jdbc:hsqldb:mem:test", username = "sa"),
+      ConnectionPoolSettings(maxPoolSize = 1)
+    )
 
     initDatabase()
   }

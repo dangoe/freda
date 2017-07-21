@@ -59,9 +59,10 @@ trait Database {
 
 object Database {
 
-  private class UsingHikari private(config: HikariConfig) extends Database {
+  def apply(connectionSettings: ConnectionSettings,
+            connectionPoolSettings: ConnectionPoolSettings = ConnectionPoolSettings.Default): Database = new Database {
 
-    private val dataSource = createDataSource()
+    private val dataSource = new HikariDataSource(createHikariConfig())
 
     override protected def openConnection()(implicit ec: ExecutionContext): Future[Connection] = {
       Future {
@@ -71,11 +72,28 @@ object Database {
       }
     }
 
-    private def createDataSource() = new HikariDataSource {
+    private def createHikariConfig() = {
+      val config = new HikariConfig()
       config.setAutoCommit(false)
+      config.setJdbcUrl(connectionSettings.jdbcUrl)
+      connectionSettings.username.foreach(config.setUsername)
+      connectionSettings.password.foreach(config.setPassword)
+      config.setMaximumPoolSize(connectionPoolSettings.maxPoolSize)
       config
     }
   }
+}
 
-  def apply(config: HikariConfig): Database = new UsingHikari(config)
+case class ConnectionSettings private(jdbcUrl: String, username: Option[String] = None, password: Option[String] = None)
+
+object ConnectionSettings {
+  def noAuth(jdbcUrl: String): ConnectionSettings = ConnectionSettings(jdbcUrl)
+  def apply(jdbcUrl: String, username: String): ConnectionSettings = ConnectionSettings(jdbcUrl, Some(username))
+  def apply(jdbcUrl: String, username: String, password: String): ConnectionSettings = ConnectionSettings(jdbcUrl, Some(username), Some(password))
+}
+
+case class ConnectionPoolSettings(maxPoolSize: Int)
+
+object ConnectionPoolSettings {
+  private[freda] final val Default = ConnectionPoolSettings(maxPoolSize = 10)
 }
