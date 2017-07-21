@@ -1,5 +1,5 @@
 # freda.sql
-anorm based **F**unctional **RE**lational **D**atabase **A**ccess
+[anorm](https://www.playframework.com/documentation/2.5.x/ScalaAnorm) based **F**unctional **RE**lational **D**atabase **A**ccess
 
 ## License
 
