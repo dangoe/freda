@@ -15,7 +15,6 @@
   */
 package de.dangoe.freda
 
-import java.sql.SQLException
 import java.util.UUID
 
 import de.dangoe.freda.util.TestDatabase
