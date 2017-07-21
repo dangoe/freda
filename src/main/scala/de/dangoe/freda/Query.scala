@@ -18,12 +18,12 @@ package de.dangoe.freda
 import java.sql.Connection
 
 import anorm._
-import Query.Result
+import de.dangoe.freda.Query.Result
 
 trait Query[+A] {
 
   @inline final def map[B](f: A => B)(implicit connection: Connection): Query[B] = flatMap(r => Result(f(r)))
-  @inline final def flatMap[B](f: A => Query[B])(implicit connection: Connection): Query[B] = f(execute())
+  @inline final def flatMap[B](f: A => Query[B])(implicit connection: Connection): Query[B] = f(run())
 
   @inline final def withFilter(pred: A => Boolean)(implicit connection: Connection): Query[A] = filter(pred)
 
@@ -32,33 +32,33 @@ trait Query[+A] {
     else Query.failed(new NoSuchElementException)
   }
 
-  private[freda] def execute()(implicit connection: Connection): A
+  private[freda] def run()(implicit connection: Connection): A
 }
 
 object Query {
 
   private case class Result[A](result: A) extends Query[A] {
-    override private[freda] def execute()(implicit connection: Connection): A = result
+    override private[freda] def run()(implicit connection: Connection): A = result
   }
 
   private case class Failure(t: Throwable) extends Query[Nothing] {
-    override private[freda] def execute()(implicit connection: Connection): Nothing = throw t
+    override private[freda] def run()(implicit connection: Connection): Nothing = throw t
   }
 
   private case class Aggregate[A](sql: SimpleSql[Row])(implicit parser: RowParser[A]) extends Query[A] {
-    override private[freda] def execute()(implicit connection: Connection): A = sql.as(parser.*).head
+    override private[freda] def run()(implicit connection: Connection): A = sql.as(parser.*).head
   }
 
   private case class Select[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[A]) extends Query[A] {
-    override private[freda] def execute()(implicit connection: Connection): A = sql.as(parser)
+    override private[freda] def run()(implicit connection: Connection): A = sql.as(parser)
   }
 
   private case class Insert(sql: SimpleSql[Row]) extends Query[Option[Long]] {
-    override private[freda] def execute()(implicit connection: Connection): Option[Long] = sql.executeInsert(SqlParser.scalar[Long].singleOpt)
+    override private[freda] def run()(implicit connection: Connection): Option[Long] = sql.executeInsert(SqlParser.scalar[Long].singleOpt)
   }
 
   private case class Update(sql: SimpleSql[Row]) extends Query[Int] {
-    override private[freda] def execute()(implicit connection: Connection): Int = sql.executeUpdate()
+    override private[freda] def run()(implicit connection: Connection): Int = sql.executeUpdate()
   }
 
   def aggregate[A](sql: SimpleSql[Row])(implicit parser: RowParser[A]): Query[A] = Aggregate[A](sql)

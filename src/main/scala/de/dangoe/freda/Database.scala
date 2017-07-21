@@ -24,13 +24,15 @@ import scala.util.control.NonFatal
 
 trait Database {
 
+  import Database._
+
   protected def openConnection()(implicit ec: ExecutionContext): Future[Connection]
 
-  final def execute[Result](query: Connection => Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  final def execute[Result](queryFactory: QueryFactory[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
       connection.setReadOnly(false)
       try {
-        val result = query(connection).execute()
+        val result = queryFactory(connection).run()
         connection.commit()
         result
       } catch {
@@ -41,10 +43,10 @@ trait Database {
     }
   }
 
-  final def executeReadOnly[Result](query: Connection => Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  final def executeReadOnly[Result](queryFactory: QueryFactory[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
       connection.setReadOnly(true)
-      try query(connection).execute()
+      try queryFactory(connection).run()
       finally connection.rollback()
     }
   }
@@ -58,6 +60,8 @@ trait Database {
 }
 
 object Database {
+
+  type QueryFactory[Result] = Connection => Query[Result]
 
   def apply(connectionSettings: ConnectionSettings,
             connectionPoolSettings: ConnectionPoolSettings = ConnectionPoolSettings.Default): Database = new Database {
