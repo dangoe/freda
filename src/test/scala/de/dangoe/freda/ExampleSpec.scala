@@ -184,21 +184,13 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     }
   }
 
-  it should "not allow to execute an insert statement within a read only transaction." in {
+  it should "not commit anything within a read only transaction." in {
     val name = createRandomName()
 
-    whenReady(database.executeReadOnly(implicit connection => userQueries.insert(name)).failed) {
-      _ shouldBe a[SQLException]
-    }
-  }
+    Await.result(database.executeReadOnly(implicit connection => userQueries.insert(name)), 5.seconds)
 
-  it should "not allow to execute an update statement within a read only transaction." in {
-    val name = createRandomName()
-
-    Await.result(database.execute(implicit connection => userQueries.insert(name)), 5.seconds)
-
-    whenReady(database.executeReadOnly(implicit connection => userQueries.updateName(0, name)).failed) {
-      _ shouldBe a[SQLException]
+    whenReady(database.executeReadOnly(implicit connection => userQueries.findAllByName(name))) {
+      _ shouldBe empty
     }
   }
 

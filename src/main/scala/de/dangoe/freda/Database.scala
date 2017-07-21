@@ -24,15 +24,12 @@ import scala.util.control.NonFatal
 
 trait Database {
 
-  import Database._
-
   protected def openConnection()(implicit ec: ExecutionContext): Future[Connection]
 
-  final def execute[Result](queryFactory: QueryFactory[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  final def execute[Result](body: Connection => Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
-      connection.setReadOnly(false)
       try {
-        val result = queryFactory(connection).run()
+        val result = body(connection).run()
         connection.commit()
         result
       } catch {
@@ -43,25 +40,23 @@ trait Database {
     }
   }
 
-  final def executeReadOnly[Result](queryFactory: QueryFactory[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  // TODO Execute in read only mode
+  final def executeReadOnly[Result](body: Connection => Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
-      connection.setReadOnly(true)
-      try queryFactory(connection).run()
+      try body(connection).run()
       finally connection.rollback()
     }
   }
 
-  private def executeInternal[Result](query: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+  private def executeInternal[Result](body: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
     openConnection().map { connection =>
-      try query(connection)
+      try body(connection)
       finally connection.close()
     }
   }
 }
 
 object Database {
-
-  type QueryFactory[Result] = Connection => Query[Result]
 
   def apply(connectionSettings: ConnectionSettings,
             connectionPoolSettings: ConnectionPoolSettings = ConnectionPoolSettings.Default): Database = new Database {
