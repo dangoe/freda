@@ -148,24 +148,6 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     }
   }
 
-  it should "allow to use basic aggregation." in {
-    val name = createRandomName()
-
-    whenReady {
-      database.execute { implicit connection =>
-        for {
-          _ <- userQueries.insert(name)
-          userCount <- userQueries.count
-          userIdSum <- userQueries.sum
-        } yield (userCount, userIdSum)
-      }
-    } {
-      case (userCount, userIdSum) =>
-        userCount >= 1 shouldBe true
-        userIdSum >= 1 shouldBe true
-    }
-  }
-
   it should "allow to perform joins." in {
     val name = createRandomName()
 

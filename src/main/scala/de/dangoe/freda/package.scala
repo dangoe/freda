@@ -15,11 +15,32 @@
   */
 package de.dangoe
 
+import java.sql.Connection
+
 import anorm._
 
 package object freda {
 
   import scala.language.implicitConversions
 
-  implicit def fromRowParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
+  implicit def toResultSetParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
+  implicit def toSeqParser[A](implicit parser: ResultSetParser[List[A]]): ResultSetParser[Seq[A]] = parser.map(_.toSeq)
+
+  implicit def insertReturningAutoIncPkMapper(sql: SimpleSql[Row]): ExecutableSql[Option[Long]] = new ExecutableSql[Option[Long]] {
+    override def execute()(implicit connection: Connection): Option[Long] = {
+      sql.executeInsert(SqlParser.scalar[Long].singleOpt)
+    }
+  }
+
+  implicit def updateMapper(sql: SimpleSql[Row]): ExecutableSql[Int] = new ExecutableSql[Int] {
+    override def execute()(implicit connection: Connection): Int = {
+      sql.executeUpdate()
+    }
+  }
+
+  implicit def selectMapper[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[A]): ExecutableSql[A] = new ExecutableSql[A] {
+    override def execute()(implicit connection: Connection): A = {
+      sql.as(parser)
+    }
+  }
 }

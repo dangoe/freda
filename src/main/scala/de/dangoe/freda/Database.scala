@@ -29,7 +29,7 @@ trait Database {
   final def execute[Result](body: Connection => Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
       try {
-        val result = body(connection).run()
+        val result = body(connection).execute()
         connection.commit()
         result
       } catch {
@@ -43,7 +43,7 @@ trait Database {
   // TODO Execute in read only mode
   final def executeReadOnly[Result](body: Connection => Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
-      try body(connection).run()
+      try body(connection).execute()
       finally connection.rollback()
     }
   }

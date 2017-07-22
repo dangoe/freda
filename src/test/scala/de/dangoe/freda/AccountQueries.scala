@@ -21,11 +21,11 @@ import anorm._
 
 class AccountQueries {
 
-  def insert(user: Long, password: String)(implicit connection: Connection): Query[Option[Long]] = Query.insert {
+  def insert(user: Long, password: String)(implicit connection: Connection): Query[Option[Long]] = Query.insertReturningAutoIncPk {
     SQL"insert into accounts (user, password) values ($user, $password)"
   }
 
-  def registeredUsers(implicit connection: Connection): Query[List[User]] = Query.select[List[User]] {
+  def registeredUsers(implicit connection: Connection): Query[Seq[User]] = Query.select[User] {
     SQL"select users.* from users join accounts on users.id = accounts.user"
   }
 }
