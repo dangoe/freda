@@ -176,7 +176,23 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     }
   }
 
-  it should "allow to use aggreations." in {
+  it should "allow to use simple aggreations." in {
+    Await.result(
+      database.execute {
+        for {
+          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+        } yield ()
+      },
+      5.seconds
+    )
+
+    whenReady(database.executeReadOnly(accountQueries.countOfRegisteredUsers)) {
+      _ >= 1 shouldBe true
+    }
+  }
+
+  it should "allow to use complex aggreations." in {
     Await.result(
       database.execute {
         for {

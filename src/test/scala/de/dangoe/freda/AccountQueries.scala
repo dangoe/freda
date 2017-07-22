@@ -30,6 +30,10 @@ class AccountQueries {
     SQL"select users.* from users join accounts on users.id = accounts.user"
   }
 
+  def countOfRegisteredUsers: Query[Long] = Query.select[Long] {
+    SQL"SELECT COUNT(*) FROM accounts"
+  }.map(_.head)
+
   def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = {
     implicit val parser = (get[Long](1) ~ get[LocalDate](2)).map {
       case n ~ p => (n, p)
