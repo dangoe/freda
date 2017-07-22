@@ -15,17 +15,15 @@
   */
 package de.dangoe.freda
 
-import java.sql.Connection
-
 import anorm._
 
 class AccountQueries {
 
-  def insert(user: Long, password: String)(implicit connection: Connection): Query[Option[Long]] = Query.insertReturningAutoIncPk {
+  def insert(user: Long, password: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
     SQL"insert into accounts (user, password) values ($user, $password)"
   }
 
-  def registeredUsers(implicit connection: Connection): Query[Seq[User]] = Query.select[User] {
+  def registeredUsers: Query[Seq[User]] = Query.select[User] {
     SQL"select users.* from users join accounts on users.id = accounts.user"
   }
 }

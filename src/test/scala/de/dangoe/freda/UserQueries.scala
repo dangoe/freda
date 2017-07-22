@@ -15,33 +15,31 @@
   */
 package de.dangoe.freda
 
-import java.sql.Connection
-
 import anorm._
 
 class UserQueries {
 
-  def updateName(id: Long, name: String)(implicit connection: Connection): Query[Int] = Query.update {
+  def updateName(id: Long, name: String): Query[Int] = Query.update {
     SQL"update users set name = $name where id = $id"
   }
 
-  def insert(name: String)(implicit connection: Connection): Query[Option[Long]] = Query.insertReturningAutoIncPk {
+  def insert(name: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
     SQL"insert into users (name) values ($name)"
   }
 
-  def delete(id: Long)(implicit connection: Connection): Query[Int] = Query.update {
+  def delete(id: Long): Query[Int] = Query.update {
     SQL"delete from users where id = $id"
   }
 
-  def findById(id: Long)(implicit connection: Connection): Query[Option[User]] = Query.select[User] {
+  def findById(id: Long): Query[Option[User]] = Query.select[User] {
     SQL"select * from users where id = $id"
   }.map(_.headOption)
 
-  def findAllByName(name: String)(implicit connection: Connection): Query[Seq[User]] = Query.select[User] {
+  def findAllByName(name: String): Query[Seq[User]] = Query.select[User] {
     SQL"select * from users where name = $name"
   }
 
-  def all(implicit connection: Connection): Query[Seq[User]] = Query.select[User] {
+  def all: Query[Seq[User]] = Query.select[User] {
     SQL"select * from users"
   }
 }

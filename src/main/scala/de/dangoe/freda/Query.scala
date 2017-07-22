@@ -22,12 +22,12 @@ import de.dangoe.freda.Query.Result
 // TODO Let Query[A] be of type ExecutableSql[A] -> Problems with covariance
 trait Query[+A] {
 
-  @inline final def map[B](f: A => B)(implicit connection: Connection): Query[B] = flatMap(r => Result(f(r)))
-  @inline final def flatMap[B](f: A => Query[B])(implicit connection: Connection): Query[B] = f(execute())
+  @inline final def map[B](f: A => B): Query[B] = flatMap(r => Result(f(r)))
+  @inline final def flatMap[B](f: A => Query[B]): Query[B] = ???
 
-  @inline final def withFilter(pred: A => Boolean)(implicit connection: Connection): Query[A] = filter(pred)
+  @inline final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
 
-  @inline final def filter(pred: A => Boolean)(implicit connection: Connection): Query[A] = flatMap { value =>
+  @inline final def filter(pred: A => Boolean): Query[A] = flatMap { value =>
     if (pred(value)) Query.successful(value)
     else Query.failed(new NoSuchElementException)
   }
