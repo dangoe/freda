@@ -17,7 +17,6 @@ package de.dangoe.freda
 
 import java.util.UUID
 
-import anorm._
 import de.dangoe.freda.util.TestDatabase
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
@@ -33,12 +32,12 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
   override protected def initDatabase(): Unit = {
     super.initDatabase()
 
-    Await.result(database.execute {
+    Await.result(
       for {
-        _ <- Query.update(SQL"create table users (id bigint identity primary key, name varchar(64), created_at datetime not null)")
-        _ <- Query.update(SQL"create table accounts (user bigint primary key, password varchar(64) not null, created_at datetime not null)")
-      } yield ()
-    }, 5.seconds)
+        _ <- database.withConnection(_.prepareStatement("create table users (id bigint identity primary key, name varchar(64), created_at datetime not null)").execute())
+        _ <- database.withConnection(_.prepareStatement("create table accounts (user bigint primary key, password varchar(64) not null, created_at datetime not null)").execute())
+      } yield (),
+      5.seconds)
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))

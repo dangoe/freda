@@ -26,6 +26,10 @@ trait Database {
 
   protected def openConnection()(implicit ec: ExecutionContext): Future[Connection]
 
+  final def withConnection[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+    executeInternal(op)
+  }
+
   final def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal { implicit connection =>
       try {
