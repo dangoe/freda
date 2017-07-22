@@ -17,7 +17,6 @@ package de.dangoe.freda
 
 import java.sql.Connection
 
-// TODO Let Query[A] be of type ExecutableSql[A] -> Problems with covariance
 trait Query[+A] {
 
   import Query._
