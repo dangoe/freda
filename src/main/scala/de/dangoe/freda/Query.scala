@@ -46,16 +46,16 @@ object Query {
     override def execute()(implicit connection: Connection): Nothing = throw t
   }
 
-  def select[A](sql: ExecutableSql[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
-    override def execute()(implicit connection: Connection): Seq[A] = sql.execute()
-  }
-
   def insertReturningAutoIncPk(sql: ExecutableSql[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
     override def execute()(implicit connection: Connection): Option[Long] = sql.execute()
   }
 
   def update(sql: ExecutableSql[Int]): Query[Int] = new Query[Int] {
     override def execute()(implicit connection: Connection): Int = sql.execute()
+  }
+
+  def select[A](sql: ExecutableSql[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
+    override def execute()(implicit connection: Connection): Seq[A] = sql.execute()
   }
 
   def successful[A](result: A): Query[A] = Result(result)
