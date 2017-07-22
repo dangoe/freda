@@ -17,18 +17,13 @@ package de.dangoe.freda
 
 import java.sql.Connection
 
-import de.dangoe.freda.Query.Result
+import de.dangoe.freda.Query.{FlatMappedQuery, Result}
 
 // TODO Let Query[A] be of type ExecutableSql[A] -> Problems with covariance
 trait Query[+A] {
 
   @inline final def map[B](f: A => B): Query[B] = flatMap(r => Result(f(r)))
-  @inline final def flatMap[B](f: A => Query[B]): Query[B] = {
-    // TODO Creates far to many instances ...
-    new Query[B] {
-      override def execute()(implicit connection: Connection): B = f(Query.this.execute()).execute()
-    }
-  }
+  @inline final def flatMap[B](f: A => Query[B]): Query[B] = new FlatMappedQuery(this, f)
 
   @inline final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
 
@@ -50,6 +45,10 @@ object Query {
 
   private case class Failure(t: Throwable) extends Query[Nothing] {
     override def execute()(implicit connection: Connection): Nothing = throw t
+  }
+
+  private class FlatMappedQuery[+A, B](query: Query[A], fun: A => Query[B]) extends Query[B] {
+    override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
   }
 
   def insertReturningAutoIncPk(sql: ExecutableSql[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
