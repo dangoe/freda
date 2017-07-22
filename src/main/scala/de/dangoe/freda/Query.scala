@@ -24,10 +24,9 @@ trait Query[+A] {
 
   @inline final def map[B](f: A => B): Query[B] = flatMap(r => Result(f(r)))
   @inline final def flatMap[B](f: A => Query[B]): Query[B] = {
-    // TODO Simplify!
-    val orig = this
+    // TODO Creates far to many instances ...
     new Query[B] {
-      override def execute()(implicit connection: Connection): B = f(orig.execute()).execute()
+      override def execute()(implicit connection: Connection): B = f(Query.this.execute()).execute()
     }
   }
 
