@@ -35,7 +35,7 @@ class AccountQueries {
   }.map(_.head)
 
   def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = {
-    implicit val parser = (get[Long](1) ~ get[LocalDate](2)).map {
+    implicit val parser: ResultSetParser[List[(Long, LocalDate)]] = (get[Long](1) ~ get[LocalDate](2)).map {
       case n ~ p => (n, p)
     }.*
 
