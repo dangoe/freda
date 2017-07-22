@@ -17,6 +17,7 @@ package de.dangoe.freda
 
 import java.util.UUID
 
+import anorm._
 import de.dangoe.freda.util.TestDatabase
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
@@ -32,10 +33,10 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
   override protected def initDatabase(): Unit = {
     super.initDatabase()
 
-    Await.result(database.execute { implicit connection =>
+    Await.result(database.execute {
       for {
-        _ <- Query.successful(connection.prepareStatement("create table users (id bigint identity primary key, name varchar(64))").executeUpdate())
-        _ <- Query.successful(connection.prepareStatement("create table accounts (user bigint primary key, password varchar(64))").executeUpdate())
+        _ <- Query.update(SQL"create table users (id bigint identity primary key, name varchar(64))")
+        _ <- Query.update(SQL"create table accounts (user bigint primary key, password varchar(64))")
       } yield ()
     }, 5.seconds)
   }
@@ -49,7 +50,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     val name = createRandomName()
 
     whenReady {
-      database.execute { implicit connection =>
+      database.execute {
         for {
           userId <- userQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
           user <- userQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
@@ -64,9 +65,9 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
   it should "commit a transaction, if requested" in {
     val name = createRandomName()
 
-    Await.result(database.execute(implicit connection => userQueries.insert(name)), 5.seconds)
+    Await.result(database.execute(userQueries.insert(name)), 5.seconds)
 
-    whenReady(database.executeReadOnly(implicit connection => userQueries.findAllByName(name))) {
+    whenReady(database.executeReadOnly(userQueries.findAllByName(name))) {
       _.length shouldBe 1
     }
   }
@@ -76,7 +77,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     val updatedName = createRandomName()
 
     whenReady {
-      database.execute { implicit connection =>
+      database.execute {
         for {
           userId <- userQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
           updatedRows <- userQueries.updateName(userId, updatedName)
@@ -94,7 +95,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     val name = createRandomName()
 
     whenReady {
-      database.execute { implicit connection =>
+      database.execute {
         for {
           maybeId <- userQueries.insert(name)
           if maybeId.isEmpty
@@ -109,7 +110,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     val name = createRandomName()
 
     whenReady {
-      database.execute { implicit connection =>
+      database.execute {
         for {
           maybeId <- userQueries.insert(name)
           deletedRows <- userQueries.delete(maybeId.get)
@@ -122,7 +123,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
 
   it should "not fail, if a row to be deleted does not exist." in {
     whenReady {
-      database.execute(implicit connection => userQueries.delete(-1))
+      database.execute(userQueries.delete(-1))
     } {
       _ shouldBe 0
     }
@@ -132,7 +133,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     val name = createRandomName()
 
     whenReady {
-      database.execute { implicit connection =>
+      database.execute {
         for {
           _ <- userQueries.insert(name)
           _ <- userQueries.insert(name)
@@ -152,7 +153,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     val name = createRandomName()
 
     whenReady {
-      database.execute { implicit connection =>
+      database.execute {
         for {
           userId <- userQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
           _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
@@ -168,9 +169,9 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
   it should "not commit anything within a read only transaction." in {
     val name = createRandomName()
 
-    Await.result(database.executeReadOnly(implicit connection => userQueries.insert(name)), 5.seconds)
+    Await.result(database.executeReadOnly(userQueries.insert(name)), 5.seconds)
 
-    whenReady(database.executeReadOnly(implicit connection => userQueries.findAllByName(name))) {
+    whenReady(database.executeReadOnly(userQueries.findAllByName(name))) {
       _ shouldBe empty
     }
   }

@@ -23,7 +23,13 @@ import de.dangoe.freda.Query.Result
 trait Query[+A] {
 
   @inline final def map[B](f: A => B): Query[B] = flatMap(r => Result(f(r)))
-  @inline final def flatMap[B](f: A => Query[B]): Query[B] = ???
+  @inline final def flatMap[B](f: A => Query[B]): Query[B] = {
+    // TODO Simplify!
+    val orig = this
+    new Query[B] {
+      override def execute()(implicit connection: Connection): B = f(orig.execute()).execute()
+    }
+  }
 
   @inline final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
 
@@ -63,9 +69,7 @@ object Query {
   def failed(t: Throwable): Query[Nothing] = Failure(t)
 
   implicit class WithSafeGet[T](query: Query[Option[T]]) {
-    def getOrThrow(t: Exception)(implicit connection: Connection): Query[T] = {
-      query.map(_.getOrElse(throw t))
-    }
+    def getOrThrow(t: Exception): Query[T] = query.map(_.getOrElse(throw t))
   }
 }
 
