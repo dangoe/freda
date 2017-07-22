@@ -35,8 +35,8 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
 
     Await.result(database.execute {
       for {
-        _ <- Query.update(SQL"create table users (id bigint identity primary key, name varchar(64))")
-        _ <- Query.update(SQL"create table accounts (user bigint primary key, password varchar(64))")
+        _ <- Query.update(SQL"create table users (id bigint identity primary key, name varchar(64), created_at datetime not null)")
+        _ <- Query.update(SQL"create table accounts (user bigint primary key, password varchar(64) not null, created_at datetime not null)")
       } yield ()
     }, 5.seconds)
   }
@@ -58,7 +58,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
       }
     } {
       case (userId, user) =>
-        user shouldBe User(Some(userId), name)
+        (user.id, user.name) shouldBe(Some(userId), name)
     }
   }
 
@@ -87,7 +87,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     } {
       case (userId, updatedRows, user) =>
         updatedRows shouldBe 1
-        user shouldBe User(Some(userId), updatedName)
+        (user.id, user.name) shouldBe(Some(userId), updatedName)
     }
   }
 
@@ -162,7 +162,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
       }
     } {
       case (userId, registeredUsers) =>
-        registeredUsers should contain only User(Some(userId), name)
+        registeredUsers.map(t => (t.id, t.name)) should contain only ((Some(userId), name))
     }
   }
 
@@ -173,6 +173,28 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
 
     whenReady(database.executeReadOnly(userQueries.findAllByName(name))) {
       _ shouldBe empty
+    }
+  }
+
+  it should "allow to use aggreations." in {
+    Await.result(
+      database.execute {
+        for {
+          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+        } yield ()
+      },
+      5.seconds
+    )
+
+    whenReady(database.executeReadOnly(accountQueries.countOfRegisteredUsersByDate)) {
+      _ should not be empty
     }
   }
 

@@ -15,6 +15,8 @@
   */
 package de.dangoe.freda
 
+import java.time.Instant
+
 import anorm._
 
 class UserQueries {
@@ -24,7 +26,7 @@ class UserQueries {
   }
 
   def insert(name: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
-    SQL"insert into users (name) values ($name)"
+    SQL"insert into users (name, created_at) values ($name, ${Instant.now})"
   }
 
   def delete(id: Long): Query[Int] = Query.update {

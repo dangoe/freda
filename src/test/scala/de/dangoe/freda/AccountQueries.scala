@@ -15,15 +15,37 @@
   */
 package de.dangoe.freda
 
+import java.time.{Instant, LocalDate}
+
 import anorm._
+import anorm.SqlParser._
 
 class AccountQueries {
 
   def insert(user: Long, password: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
-    SQL"insert into accounts (user, password) values ($user, $password)"
+    SQL"insert into accounts (user, password, created_at) values ($user, $password, ${Instant.now})"
   }
 
   def registeredUsers: Query[Seq[User]] = Query.select[User] {
     SQL"select users.* from users join accounts on users.id = accounts.user"
+  }
+
+  def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = {
+    implicit val parser = (get[Long](1) ~ get[LocalDate](2)).map {
+      case n ~ p => (n, p)
+    }.*
+
+    Query.select[(Long, LocalDate)] {
+      SQL"""
+           SELECT
+             count(a2.user_id) AS registrations_per_day,
+             a2.registered_at  AS day
+           FROM (SELECT
+                   a1.user                AS user_id,
+                   to_date(a1.created_at) AS registered_at
+                 FROM accounts AS a1) AS a2
+           GROUP BY a2.registered_at
+         """
+    }
   }
 }
