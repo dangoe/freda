@@ -19,6 +19,7 @@ import java.sql.Connection
 
 import de.dangoe.freda.Query.Result
 
+// TODO Let Query[A] be of type ExecutableSql[A] -> Problems with covariance
 trait Query[+A] {
 
   @inline final def map[B](f: A => B)(implicit connection: Connection): Query[B] = flatMap(r => Result(f(r)))
