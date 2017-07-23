@@ -23,11 +23,14 @@ package object freda {
 
   import scala.language.implicitConversions
 
-  // TODO Add a more generic solution
-  implicit val longParser: RowParser[Long] = SqlParser.scalar[Long]
+  implicit val stringScalarParser: RowParser[String] = SqlParser.scalar[String]
+  implicit val booleanScalarParser: RowParser[Boolean] = SqlParser.scalar[Boolean]
+  implicit val intScalarParser: RowParser[Int] = SqlParser.scalar[Int]
+  implicit val longScalarParser: RowParser[Long] = SqlParser.scalar[Long]
+  implicit val floatScalarParser: RowParser[Float] = SqlParser.scalar[Float]
+  implicit val doubleScalarParser: RowParser[Double] = SqlParser.scalar[Double]
 
-  implicit def rowToResultParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
-  implicit def listToSeqResultSetParser[A](implicit parser: ResultSetParser[List[A]]): ResultSetParser[Seq[A]] = parser.map(_.toSeq)
+  implicit def rowToResultSetParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
 
   implicit def executableAnormInsertConversion(sql: SimpleSql[Row]): ExecutableWithConnection[Option[Long]] = {
     new ExecutableWithConnection[Option[Long]] {
@@ -45,9 +48,9 @@ package object freda {
     }
   }
 
-  implicit def executableAnormSelectConversion[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[A]): ExecutableWithConnection[A] = {
-    new ExecutableWithConnection[A] {
-      override def execute()(implicit connection: Connection): A = {
+  implicit def executableAnormSelectConversion[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[List[A]]): ExecutableWithConnection[Seq[A]] = {
+    new ExecutableWithConnection[Seq[A]] {
+      override def execute()(implicit connection: Connection): Seq[A] = {
         sql.as(parser)
       }
     }

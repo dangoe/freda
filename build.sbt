@@ -1,9 +1,11 @@
-organization := "de.dangoe.freda"
+organization := "de.dangoe"
 name := "freda"
 
 version := "0.0.1-SNAPSHOT"
 
 scalaVersion := "2.12.1"
+
+scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "anorm" % "2.5.3",
@@ -11,4 +13,3 @@ libraryDependencies ++= Seq(
   "org.hsqldb" % "hsqldb" % "2.3.5" % "test",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )
-

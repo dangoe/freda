@@ -62,6 +62,14 @@ object Query {
     override def execute()(implicit connection: Connection): Seq[A] = executuable.execute()
   }
 
+  def selectUnique[A](executuable: ExecutableWithConnection[Seq[A]]): Query[A] = new Query[A] {
+    override def execute()(implicit connection: Connection): A = {
+      val result = executuable.execute()
+      require(result.length == 1, "Executable returned a non-unique result.")
+      result.head
+    }
+  }
+
   def successful[A](result: A): Query[A] = Result(result)
   def failed(t: Throwable): Query[Nothing] = Failure(t)
 
