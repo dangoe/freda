@@ -7,6 +7,8 @@ scalaVersion := "2.12.1"
 
 scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation")
 
+updateOptions := updateOptions.value.withCachedResolution(true)
+
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "anorm" % "2.5.3",
   "com.zaxxer" % "HikariCP" % "2.4.3",
