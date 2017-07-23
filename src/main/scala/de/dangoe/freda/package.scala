@@ -34,15 +34,15 @@ package object freda {
 
   implicit def rowToResultSetParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
 
-  implicit def fromAnormInsert(sql: SimpleSql[Row]): WithConnection[Option[Long]] = { implicit connection =>
+  implicit def adaptAnormInsert(sql: SimpleSql[Row]): WithConnection[Option[Long]] = { implicit connection =>
     sql.executeInsert(SqlParser.scalar[Long].singleOpt)
   }
 
-  implicit def fromAnormUpdate(sql: SimpleSql[Row]): WithConnection[Int] = { implicit connection =>
+  implicit def adaptAnormUpdate(sql: SimpleSql[Row]): WithConnection[Int] = { implicit connection =>
     sql.executeUpdate()
   }
 
-  implicit def fromAnormSelect[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[List[A]]): WithConnection[Seq[A]] = { implicit connection =>
+  implicit def adaptAnormSelect[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[List[A]]): WithConnection[Seq[A]] = { implicit connection =>
     sql.as(parser)
   }
 }
