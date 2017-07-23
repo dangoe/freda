@@ -21,7 +21,7 @@ sealed trait Query[+A] {
 
   import Query._
 
-  @inline final def map[B](f: A => B): Query[B] = flatMap(r => Result(f(r)))
+  @inline final def map[B](f: A => B): Query[B] = flatMap(r => Query.successful(f(r)))
   @inline final def flatMap[B](f: A => Query[B]): Query[B] = new FlatMappedQuery(this, f)
 
   @inline final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
@@ -89,8 +89,8 @@ object Query {
 
   implicit class WithSafeGet[T](query: Query[Option[T]]) {
     def getOrThrow(t: Exception): Query[T] = query.flatMap {
-      case Some(value) => Result(value)
-      case None => Failure(t)
+      case Some(value) => Query.successful(value)
+      case None => Query.failed(t)
     }
   }
 }
