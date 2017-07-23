@@ -66,7 +66,10 @@ object Query {
   def failed(t: Throwable): Query[Nothing] = Failure(t)
 
   implicit class WithSafeGet[T](query: Query[Option[T]]) {
-    def getOrThrow(t: Exception): Query[T] = query.map(_.getOrElse(throw t))
+    def getOrThrow(t: Exception): Query[T] = query.flatMap {
+      case Some(value) => Result(value)
+      case None => Failure(t)
+    }
   }
 }
 
