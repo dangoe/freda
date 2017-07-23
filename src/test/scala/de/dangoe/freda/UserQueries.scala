@@ -25,7 +25,7 @@ object UserQueries {
     SQL"update users set name = $name where id = $id"
   }
 
-  def insert(name: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
+  def insert(name: String): Query[Option[Long]] = Query.insert {
     SQL"insert into users (name, created_at) values ($name, ${Instant.now})"
   }
 

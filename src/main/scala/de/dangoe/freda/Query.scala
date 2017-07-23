@@ -50,7 +50,7 @@ object Query {
     override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
   }
 
-  def insertReturningAutoIncPk(executuable: ExecutableWithConnection[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
+  def insert(executuable: ExecutableWithConnection[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
     override def execute()(implicit connection: Connection): Option[Long] = executuable.execute()
   }
 

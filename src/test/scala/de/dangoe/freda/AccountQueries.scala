@@ -22,7 +22,7 @@ import anorm._
 
 object AccountQueries {
 
-  def insert(user: Long, password: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
+  def insert(user: Long, password: String): Query[Option[Long]] = Query.insert {
     SQL"insert into accounts (user, password, created_at) values ($user, $password, ${Instant.now})"
   }
 
