@@ -46,46 +46,34 @@ object Query {
     override def execute()(implicit connection: Connection): Nothing = throw t
   }
 
+  def successful[A](result: A): Query[A] = Result(result)
+  def failed(t: Throwable): Query[Nothing] = Failure(t)
+
+  def insert(op: WithConnection[Option[Long]]): Query[Option[Long]] = Query[Option[Long]](op)
+  def update(op: WithConnection[Int]): Query[Int] = Query[Int](op)
+  def select[A](op: WithConnection[Seq[A]]): Query[Seq[A]] = Query[Seq[A]](op)
+
+  @throws[IllegalArgumentException]
+  def selectSingle[A](op: WithConnection[Seq[A]]): Query[A] = Query[A] { connection =>
+    val resultSet = op(connection)
+    require(resultSet.length == 1, "Result set must contain exactly one row.")
+    resultSet.head
+  }
+
+  @throws[IllegalArgumentException]
+  def selectSingleOpt[A](op: WithConnection[Seq[A]]): Query[Option[A]] = Query[Option[A]] { connection =>
+    val resultSet = op(connection)
+    require(resultSet.length <= 1, "Result set must contain exactly zero or one rows.")
+    resultSet.headOption
+  }
+
+  private def apply[A](op: WithConnection[A]): Query[A] = new Query[A] {
+    override def execute()(implicit connection: Connection): A = op(connection)
+  }
+
   private class FlatMappedQuery[+A, B](query: Query[A], fun: A => Query[B]) extends Query[B] {
     override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
   }
-
-  def insert(op: WithConnection[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
-    override def execute()(implicit connection: Connection): Option[Long] = op(connection)
-  }
-
-  def update(op: WithConnection[Int]): Query[Int] = new Query[Int] {
-    override def execute()(implicit connection: Connection): Int = op(connection)
-  }
-
-  def select[A](op: WithConnection[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
-    override def execute()(implicit connection: Connection): Seq[A] = op(connection)
-  }
-
-  @throws[IllegalArgumentException]
-  def selectSingle[A](op: WithConnection[Seq[A]]): Query[A] = {
-    selectSingleInternal(op) { resultSet =>
-      require(resultSet.length == 1, "Result set must contain exactly one row.")
-      resultSet.head
-    }
-  }
-
-  @throws[IllegalArgumentException]
-  def selectSingleOpt[A](op: WithConnection[Seq[A]]): Query[Option[A]] = {
-    selectSingleInternal(op) { resultSet =>
-      require(resultSet.length <= 1, "Result set must contain exactly zero or one rows.")
-      resultSet.headOption
-    }
-  }
-
-  private def selectSingleInternal[A, B](op: WithConnection[Seq[A]])(f: Seq[A] => B): Query[B] = new Query[B] {
-    override def execute()(implicit connection: Connection): B = {
-      f(op(connection))
-    }
-  }
-
-  def successful[A](result: A): Query[A] = Result(result)
-  def failed(t: Throwable): Query[Nothing] = Failure(t)
 
   implicit class WithSafeGet[T](query: Query[Option[T]]) {
     def getOrThrow(t: Exception): Query[T] = query.flatMap {
