@@ -33,9 +33,9 @@ class UserQueries {
     SQL"delete from users where id = $id"
   }
 
-  def findById(id: Long): Query[Option[User]] = Query.select[User] {
+  def findById(id: Long): Query[Option[User]] = Query.selectSingleOpt[User] {
     SQL"select * from users where id = $id"
-  }.map(_.headOption)
+  }
 
   def findAllByName(name: String): Query[Seq[User]] = Query.select[User] {
     SQL"select * from users where name = $name"

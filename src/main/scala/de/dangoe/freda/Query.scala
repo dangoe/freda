@@ -62,12 +62,25 @@ object Query {
     override def execute()(implicit connection: Connection): Seq[A] = executable.execute()
   }
 
-  @throws[IllegalStateException]("Result set is not of size 1.")
-  def selectSingle[A](executable: ExecutableWithConnection[Seq[A]]): Query[A] = new Query[A] {
-    override def execute()(implicit connection: Connection): A = {
-      val result = executable.execute()
-      if (result.length != 1) throw new IllegalStateException("Result set is not of size 1.")
-      result.head
+  @throws[IllegalArgumentException]
+  def selectSingle[A](executable: ExecutableWithConnection[Seq[A]]): Query[A] = {
+    selectSingleInternal(executable) { resultSet =>
+      require(resultSet.length == 1, "Result set must contain exactly one row.")
+      resultSet.head
+    }
+  }
+
+  @throws[IllegalArgumentException]
+  def selectSingleOpt[A](executable: ExecutableWithConnection[Seq[A]]): Query[Option[A]] = {
+    selectSingleInternal(executable) { resultSet =>
+      require(resultSet.length <= 1, "Result set must contain exactly zero or one rows.")
+      resultSet.headOption
+    }
+  }
+
+  private def selectSingleInternal[A, B](executable: ExecutableWithConnection[Seq[A]])(f: Seq[A] => B): Query[B] = new Query[B] {
+    override def execute()(implicit connection: Connection): B = {
+      f(executable.execute())
     }
   }
 
