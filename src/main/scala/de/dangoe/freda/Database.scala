@@ -26,7 +26,7 @@ trait Database {
 
   protected def openConnection()(implicit ec: ExecutionContext): Future[Connection]
 
-  final def withConnection[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+  final def withConnection[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal(op)
   }
 
@@ -52,9 +52,9 @@ trait Database {
     }
   }
 
-  private def executeInternal[Result](body: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+  private def executeInternal[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
     openConnection().map { connection =>
-      try body(connection)
+      try op(connection)
       finally connection.close()
     }
   }

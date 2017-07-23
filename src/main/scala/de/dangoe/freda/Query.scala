@@ -50,37 +50,37 @@ object Query {
     override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
   }
 
-  def insert(executuable: ExecutableWithConnection[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
-    override def execute()(implicit connection: Connection): Option[Long] = executuable.execute()
+  def insert(op: WithConnection[Option[Long]]): Query[Option[Long]] = new Query[Option[Long]] {
+    override def execute()(implicit connection: Connection): Option[Long] = op(connection)
   }
 
-  def update(executable: ExecutableWithConnection[Int]): Query[Int] = new Query[Int] {
-    override def execute()(implicit connection: Connection): Int = executable.execute()
+  def update(op: WithConnection[Int]): Query[Int] = new Query[Int] {
+    override def execute()(implicit connection: Connection): Int = op(connection)
   }
 
-  def select[A](executable: ExecutableWithConnection[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
-    override def execute()(implicit connection: Connection): Seq[A] = executable.execute()
+  def select[A](op: WithConnection[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
+    override def execute()(implicit connection: Connection): Seq[A] = op(connection)
   }
 
   @throws[IllegalArgumentException]
-  def selectSingle[A](executable: ExecutableWithConnection[Seq[A]]): Query[A] = {
-    selectSingleInternal(executable) { resultSet =>
+  def selectSingle[A](op: WithConnection[Seq[A]]): Query[A] = {
+    selectSingleInternal(op) { resultSet =>
       require(resultSet.length == 1, "Result set must contain exactly one row.")
       resultSet.head
     }
   }
 
   @throws[IllegalArgumentException]
-  def selectSingleOpt[A](executable: ExecutableWithConnection[Seq[A]]): Query[Option[A]] = {
-    selectSingleInternal(executable) { resultSet =>
+  def selectSingleOpt[A](op: WithConnection[Seq[A]]): Query[Option[A]] = {
+    selectSingleInternal(op) { resultSet =>
       require(resultSet.length <= 1, "Result set must contain exactly zero or one rows.")
       resultSet.headOption
     }
   }
 
-  private def selectSingleInternal[A, B](executable: ExecutableWithConnection[Seq[A]])(f: Seq[A] => B): Query[B] = new Query[B] {
+  private def selectSingleInternal[A, B](op: WithConnection[Seq[A]])(f: Seq[A] => B): Query[B] = new Query[B] {
     override def execute()(implicit connection: Connection): B = {
-      f(executable.execute())
+      f(op(connection))
     }
   }
 
@@ -93,8 +93,4 @@ object Query {
       case None => Query.failed(t)
     }
   }
-}
-
-trait ExecutableWithConnection[A] {
-  def execute()(implicit connection: Connection): A
 }
