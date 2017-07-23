@@ -21,27 +21,27 @@ import anorm._
 
 object UserQueries {
 
-  def updateName(id: Long, name: String): Query[Int] = Query.update {
-    SQL"update users set name = $name where id = $id"
+  def updateName(id: Long, name: String): Query[Int] = Query { implicit connection =>
+    SQL"update users set name = $name where id = $id".executeUpdate()
   }
 
-  def insert(name: String): Query[Option[Long]] = Query.insert {
-    SQL"insert into users (name, created_at) values ($name, ${Instant.now})"
+  def insert(name: String): Query[Option[Long]] = Query { implicit connection =>
+    SQL"insert into users (name, created_at) values ($name, ${Instant.now})".executeInsert()
   }
 
-  def delete(id: Long): Query[Int] = Query.update {
-    SQL"delete from users where id = $id"
+  def delete(id: Long): Query[Int] = Query { implicit connection =>
+    SQL"delete from users where id = $id".executeUpdate()
   }
 
-  def findById(id: Long): Query[Option[User]] = Query.selectSingleOpt[User] {
-    SQL"select * from users where id = $id"
+  def findById(id: Long): Query[Option[User]] = Query.selectSingleOpt { implicit connection =>
+    SQL"select * from users where id = $id".as(User.Parser.*)
   }
 
-  def findAllByName(name: String): Query[Seq[User]] = Query.select[User] {
-    SQL"select * from users where name = $name"
+  def findAllByName(name: String): Query[Seq[User]] = Query { implicit connection =>
+    SQL"select * from users where name = $name".as(User.Parser.*)
   }
 
-  def all: Query[Seq[User]] = Query.select[User] {
-    SQL"select * from users"
+  def all: Query[Seq[User]] = Query { implicit connection =>
+    SQL"select * from users".as(User.Parser.*)
   }
 }

@@ -49,10 +49,6 @@ object Query {
   def successful[A](result: A): Query[A] = Result(result)
   def failed(t: Throwable): Query[Nothing] = Failure(t)
 
-  def insert(op: WithConnection[Option[Long]]): Query[Option[Long]] = Query[Option[Long]](op)
-  def update(op: WithConnection[Int]): Query[Int] = Query[Int](op)
-  def select[A](op: WithConnection[Seq[A]]): Query[Seq[A]] = Query[Seq[A]](op)
-
   @throws[IllegalArgumentException]
   def selectSingle[A](op: WithConnection[Seq[A]]): Query[A] = Query[A] { connection =>
     val resultSet = op(connection)
@@ -67,7 +63,7 @@ object Query {
     resultSet.headOption
   }
 
-  private def apply[A](op: WithConnection[A]): Query[A] = new Query[A] {
+  def apply[A](op: WithConnection[A]): Query[A] = new Query[A] {
     override def execute()(implicit connection: Connection): A = op(connection)
   }
 

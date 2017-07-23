@@ -24,25 +24,4 @@ package object freda {
   import scala.language.implicitConversions
 
   type WithConnection[A] = Connection => A
-
-  implicit val stringScalarParser: RowParser[String] = SqlParser.scalar[String]
-  implicit val booleanScalarParser: RowParser[Boolean] = SqlParser.scalar[Boolean]
-  implicit val intScalarParser: RowParser[Int] = SqlParser.scalar[Int]
-  implicit val longScalarParser: RowParser[Long] = SqlParser.scalar[Long]
-  implicit val floatScalarParser: RowParser[Float] = SqlParser.scalar[Float]
-  implicit val doubleScalarParser: RowParser[Double] = SqlParser.scalar[Double]
-
-  implicit def rowToResultSetParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
-
-  implicit def adaptAnormInsert(sql: SimpleSql[Row]): WithConnection[Option[Long]] = { implicit connection =>
-    sql.executeInsert(SqlParser.scalar[Long].singleOpt)
-  }
-
-  implicit def adaptAnormUpdate(sql: SimpleSql[Row]): WithConnection[Int] = { implicit connection =>
-    sql.executeUpdate()
-  }
-
-  implicit def adaptAnormSelect[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[List[A]]): WithConnection[Seq[A]] = { implicit connection =>
-    sql.as(parser)
-  }
 }
