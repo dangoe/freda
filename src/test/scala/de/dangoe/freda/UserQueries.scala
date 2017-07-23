@@ -19,7 +19,7 @@ import java.time.Instant
 
 import anorm._
 
-class UserQueries {
+object UserQueries {
 
   def updateName(id: Long, name: String): Query[Int] = Query.update {
     SQL"update users set name = $name where id = $id"

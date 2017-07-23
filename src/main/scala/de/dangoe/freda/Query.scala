@@ -17,7 +17,7 @@ package de.dangoe.freda
 
 import java.sql.Connection
 
-trait Query[+A] {
+sealed trait Query[+A] {
 
   import Query._
 
@@ -38,11 +38,11 @@ object Query {
 
   import scala.language.implicitConversions
 
-  private case class Result[A](result: A) extends Query[A] {
+  case class Result[A](result: A) extends Query[A] {
     override def execute()(implicit connection: Connection): A = result
   }
 
-  private case class Failure(t: Throwable) extends Query[Nothing] {
+  case class Failure(t: Throwable) extends Query[Nothing] {
     override def execute()(implicit connection: Connection): Nothing = throw t
   }
 

@@ -17,10 +17,10 @@ package de.dangoe.freda
 
 import java.time.{Instant, LocalDate}
 
-import anorm._
 import anorm.SqlParser._
+import anorm._
 
-class AccountQueries {
+object AccountQueries {
 
   def insert(user: Long, password: String): Query[Option[Long]] = Query.insertReturningAutoIncPk {
     SQL"insert into accounts (user, password, created_at) values ($user, $password, ${Instant.now})"

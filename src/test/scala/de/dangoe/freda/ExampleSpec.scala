@@ -42,17 +42,14 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
-  private val userQueries = new UserQueries
-  private val accountQueries = new AccountQueries
-
   "Toolkit" should "allow to execute a simple insert and select operation." in {
     val name = createRandomName()
 
     whenReady {
       database.execute {
         for {
-          userId <- userQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          user <- userQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
+          userId <- UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          user <- UserQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
         } yield (userId, user)
       }
     } {
@@ -64,9 +61,9 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
   it should "commit a transaction, if requested" in {
     val name = createRandomName()
 
-    Await.result(database.execute(userQueries.insert(name)), 5.seconds)
+    Await.result(database.execute(UserQueries.insert(name)), 5.seconds)
 
-    whenReady(database.executeReadOnly(userQueries.findAllByName(name))) {
+    whenReady(database.executeReadOnly(UserQueries.findAllByName(name))) {
       _.length shouldBe 1
     }
   }
@@ -78,9 +75,9 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     whenReady {
       database.execute {
         for {
-          userId <- userQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          updatedRows <- userQueries.updateName(userId, updatedName)
-          user <- userQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
+          userId <- UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          updatedRows <- UserQueries.updateName(userId, updatedName)
+          user <- UserQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
         } yield (userId, updatedRows, user)
       }
     } {
@@ -96,7 +93,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     whenReady {
       database.execute {
         for {
-          maybeId <- userQueries.insert(name)
+          maybeId <- UserQueries.insert(name)
           if maybeId.isEmpty
         } yield maybeId
       }.failed
@@ -111,8 +108,8 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     whenReady {
       database.execute {
         for {
-          maybeId <- userQueries.insert(name)
-          deletedRows <- userQueries.delete(maybeId.get)
+          maybeId <- UserQueries.insert(name)
+          deletedRows <- UserQueries.delete(maybeId.get)
         } yield deletedRows
       }
     } {
@@ -122,7 +119,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
 
   it should "not fail, if a row to be deleted does not exist." in {
     whenReady {
-      database.execute(userQueries.delete(-1))
+      database.execute(UserQueries.delete(-1))
     } {
       _ shouldBe 0
     }
@@ -134,13 +131,13 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     whenReady {
       database.execute {
         for {
-          _ <- userQueries.insert(name)
-          _ <- userQueries.insert(name)
-          _ <- userQueries.insert(name)
-          _ <- userQueries.insert(name)
-          _ <- userQueries.insert(name)
-          _ <- userQueries.insert(name)
-          userCount <- userQueries.findAllByName(name).map(_.length)
+          _ <- UserQueries.insert(name)
+          _ <- UserQueries.insert(name)
+          _ <- UserQueries.insert(name)
+          _ <- UserQueries.insert(name)
+          _ <- UserQueries.insert(name)
+          _ <- UserQueries.insert(name)
+          userCount <- UserQueries.findAllByName(name).map(_.length)
         } yield userCount
       }
     } {
@@ -154,9 +151,9 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     whenReady {
       database.execute {
         for {
-          userId <- userQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
-          registeredUsers <- accountQueries.registeredUsers
+          userId <- UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
+          registeredUsers <- AccountQueries.registeredUsers
         } yield (userId, registeredUsers)
       }
     } {
@@ -168,9 +165,9 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
   it should "not commit anything within a read only transaction." in {
     val name = createRandomName()
 
-    Await.result(database.executeReadOnly(userQueries.insert(name)), 5.seconds)
+    Await.result(database.executeReadOnly(UserQueries.insert(name)), 5.seconds)
 
-    whenReady(database.executeReadOnly(userQueries.findAllByName(name))) {
+    whenReady(database.executeReadOnly(UserQueries.findAllByName(name))) {
       _ shouldBe empty
     }
   }
@@ -179,14 +176,14 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     Await.result(
       database.execute {
         for {
-          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
         } yield ()
       },
       5.seconds
     )
 
-    whenReady(database.executeReadOnly(accountQueries.countOfRegisteredUsers)) {
+    whenReady(database.executeReadOnly(AccountQueries.countOfRegisteredUsers)) {
       _ >= 1 shouldBe true
     }
   }
@@ -195,21 +192,40 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     Await.result(
       database.execute {
         for {
-          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
-          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
-          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
-          userId <- userQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-          _ <- accountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
+          userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+          _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
         } yield ()
       },
       5.seconds
     )
 
-    whenReady(database.executeReadOnly(accountQueries.countOfRegisteredUsersByDate)) {
+    whenReady(database.executeReadOnly(AccountQueries.countOfRegisteredUsersByDate)) {
       _ should not be empty
+    }
+  }
+
+  it should "not map a failed query." in {
+    whenReady(
+      database.executeReadOnly {
+        for {
+          _ <- TestQueries.alwaysFailing
+          randomInt <- TestQueries.randomInt
+        } yield randomInt
+      }.failed
+    ) {
+      _ shouldBe a[IllegalStateException]
+    }
+  }
+
+  it should "allow to wrap a non db operations within a query." in {
+    whenReady(database.executeReadOnly(TestQueries.randomInt)) {
+      _ shouldBe a[java.lang.Integer]
     }
   }
 
