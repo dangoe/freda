@@ -26,8 +26,8 @@ package object freda {
   // TODO Add a more generic solution
   implicit val longParser: RowParser[Long] = SqlParser.scalar[Long]
 
-  implicit def toResultSetParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
-  implicit def toSeqParser[A](implicit parser: ResultSetParser[List[A]]): ResultSetParser[Seq[A]] = parser.map(_.toSeq)
+  implicit def rowToResultParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
+  implicit def listToSeqResultSetParser[A](implicit parser: ResultSetParser[List[A]]): ResultSetParser[Seq[A]] = parser.map(_.toSeq)
 
   implicit def executableAnormInsertConversion(sql: SimpleSql[Row]): ExecutableWithConnection[Option[Long]] = {
     new ExecutableWithConnection[Option[Long]] {
