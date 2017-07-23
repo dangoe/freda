@@ -24,4 +24,8 @@ package object freda {
   import scala.language.implicitConversions
 
   type WithConnection[A] = Connection => A
+
+  implicit class RichSimpleSql(sql: SimpleSql[Row]) {
+    def as[A](parser: RowParser[A])(implicit connection: Connection): List[A] = sql.as(parser.*)
+  }
 }
