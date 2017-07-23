@@ -36,8 +36,6 @@ sealed trait Query[+A] {
 
 object Query {
 
-  import scala.language.implicitConversions
-
   case class Result[A](result: A) extends Query[A] {
     override def execute()(implicit connection: Connection): A = result
   }
@@ -69,12 +67,5 @@ object Query {
 
   private class FlatMappedQuery[+A, B](query: Query[A], fun: A => Query[B]) extends Query[B] {
     override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
-  }
-
-  implicit class WithSafeGet[T](query: Query[Option[T]]) {
-    def getOrThrow(t: Exception): Query[T] = query.flatMap {
-      case Some(value) => Query.successful(value)
-      case None => Query.failed(t)
-    }
   }
 }
