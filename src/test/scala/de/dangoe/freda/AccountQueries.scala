@@ -30,7 +30,7 @@ class AccountQueries {
     SQL"select users.* from users join accounts on users.id = accounts.user"
   }
 
-  def countOfRegisteredUsers: Query[Long] = Query.selectUnique[Long] {
+  def countOfRegisteredUsers: Query[Long] = Query.selectSingle[Long] {
     SQL"SELECT COUNT(*) FROM accounts"
   }
 

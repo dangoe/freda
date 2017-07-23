@@ -54,18 +54,19 @@ object Query {
     override def execute()(implicit connection: Connection): Option[Long] = executuable.execute()
   }
 
-  def update(executuable: ExecutableWithConnection[Int]): Query[Int] = new Query[Int] {
-    override def execute()(implicit connection: Connection): Int = executuable.execute()
+  def update(executable: ExecutableWithConnection[Int]): Query[Int] = new Query[Int] {
+    override def execute()(implicit connection: Connection): Int = executable.execute()
   }
 
-  def select[A](executuable: ExecutableWithConnection[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
-    override def execute()(implicit connection: Connection): Seq[A] = executuable.execute()
+  def select[A](executable: ExecutableWithConnection[Seq[A]]): Query[Seq[A]] = new Query[Seq[A]] {
+    override def execute()(implicit connection: Connection): Seq[A] = executable.execute()
   }
 
-  def selectUnique[A](executuable: ExecutableWithConnection[Seq[A]]): Query[A] = new Query[A] {
+  @throws[IllegalStateException]("Result set is not of size 1.")
+  def selectSingle[A](executable: ExecutableWithConnection[Seq[A]]): Query[A] = new Query[A] {
     override def execute()(implicit connection: Connection): A = {
-      val result = executuable.execute()
-      require(result.length == 1, "Executable returned a non-unique result.")
+      val result = executable.execute()
+      if (result.length != 1) throw new IllegalStateException("Result set is not of size 1.")
       result.head
     }
   }
