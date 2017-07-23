@@ -29,21 +29,27 @@ package object freda {
   implicit def toResultSetParser[A](implicit parser: RowParser[A]): ResultSetParser[List[A]] = parser.*
   implicit def toSeqParser[A](implicit parser: ResultSetParser[List[A]]): ResultSetParser[Seq[A]] = parser.map(_.toSeq)
 
-  implicit def insertReturningAutoIncPkMapper(sql: SimpleSql[Row]): ExecutableSql[Option[Long]] = new ExecutableSql[Option[Long]] {
-    override def execute()(implicit connection: Connection): Option[Long] = {
-      sql.executeInsert(SqlParser.scalar[Long].singleOpt)
+  implicit def executableAnormInsertConversion(sql: SimpleSql[Row]): ExecutableWithConnection[Option[Long]] = {
+    new ExecutableWithConnection[Option[Long]] {
+      override def execute()(implicit connection: Connection): Option[Long] = {
+        sql.executeInsert(SqlParser.scalar[Long].singleOpt)
+      }
     }
   }
 
-  implicit def updateMapper(sql: SimpleSql[Row]): ExecutableSql[Int] = new ExecutableSql[Int] {
-    override def execute()(implicit connection: Connection): Int = {
-      sql.executeUpdate()
+  implicit def executableAnormUpdateConversion(sql: SimpleSql[Row]): ExecutableWithConnection[Int] = {
+    new ExecutableWithConnection[Int] {
+      override def execute()(implicit connection: Connection): Int = {
+        sql.executeUpdate()
+      }
     }
   }
 
-  implicit def selectMapper[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[A]): ExecutableSql[A] = new ExecutableSql[A] {
-    override def execute()(implicit connection: Connection): A = {
-      sql.as(parser)
+  implicit def executableAnormSelectConversion[A](sql: SimpleSql[Row])(implicit parser: ResultSetParser[A]): ExecutableWithConnection[A] = {
+    new ExecutableWithConnection[A] {
+      override def execute()(implicit connection: Connection): A = {
+        sql.as(parser)
+      }
     }
   }
 }
