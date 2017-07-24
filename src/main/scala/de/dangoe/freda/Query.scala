@@ -21,12 +21,12 @@ sealed trait Query[+A] {
 
   import Query._
 
-  @inline final def map[B](f: A => B): Query[B] = flatMap(r => Query.successful(f(r)))
-  @inline final def flatMap[B](f: A => Query[B]): Query[B] = new FlatMappedQuery(this, f)
+  final def map[B](f: A => B): Query[B] = flatMap(r => Query.successful(f(r)))
+  final def flatMap[B](f: A => Query[B]): Query[B] = new FlatMappedQuery(this, f)
 
-  @inline final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
+  final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
 
-  @inline final def filter(pred: A => Boolean): Query[A] = flatMap { value =>
+  final def filter(pred: A => Boolean): Query[A] = flatMap { value =>
     if (pred(value)) Query.successful(value)
     else Query.failed(new NoSuchElementException)
   }
