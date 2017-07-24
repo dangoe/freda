@@ -1,6 +1,9 @@
 # freda.sql
 [anorm](https://www.playframework.com/documentation/2.5.x/ScalaAnorm) based **F**unctional **RE**lational **D**atabase **A**ccess
 
+## Disclaimer
+This library is still in an experimental state and under active development.
+
 ## License
 
 Copyright 2017 Daniel Götten
