@@ -15,9 +15,14 @@
   */
 package de.dangoe.freda.util
 
-import de.dangoe.freda.{ConnectionPoolSettings, ConnectionSettings, Database}
+import java.sql.{Connection, DriverManager}
+import java.util.Properties
+
+import de.dangoe.freda.Database
 import org.hsqldb.server.Server
 import org.scalatest.{BeforeAndAfterAll, TestSuite}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait TestDatabase extends BeforeAndAfterAll {
   _: TestSuite =>
@@ -35,10 +40,14 @@ trait TestDatabase extends BeforeAndAfterAll {
     server.setPort(9001) // TODO Get available local port
     server.start()
 
-    database = Database(
-      ConnectionSettings(jdbcUrl = "jdbc:hsqldb:mem:test", username = "sa"),
-      ConnectionPoolSettings(maxPoolSize = 1)
-    )
+    database = new Database {
+      override protected def openConnection()(implicit ec: ExecutionContext): Future[Connection] = Future {
+        val properties = new Properties()
+        properties.put("user", "sa")
+
+        DriverManager.getConnection("jdbc:hsqldb:mem:test", properties)
+      }
+    }
 
     initDatabase()
   }

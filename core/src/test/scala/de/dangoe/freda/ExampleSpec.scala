@@ -172,7 +172,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     }
   }
 
-  it should "allow to use simple aggreations." in {
+  it should "allow to use simple aggregations." in {
     Await.result(
       database.execute {
         for {
