@@ -61,7 +61,7 @@ object Query {
     override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
   }
 
-  implicit class QueryWithOptionalResult[T](query: Query[Option[T]]) {
+  implicit class WithOptionResult[T](query: Query[Option[T]]) {
 
     def getOrThrow(t: Exception): Query[T] = query.flatMap {
       case Some(value) => Query.successful(value)
