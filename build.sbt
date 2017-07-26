@@ -7,7 +7,8 @@ lazy val commonSettings = Seq(
   updateOptions := updateOptions.value.withCachedResolution(true),
   libraryDependencies ++= Seq(
     "org.hsqldb" % "hsqldb" % "2.4.0" % "test",
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
   )
 )
 
