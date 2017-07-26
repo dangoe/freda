@@ -30,9 +30,9 @@ object AccountQueries {
     SQL"select users.* from users join accounts on users.id = accounts.user".parseTo[User]
   }
 
-  def countOfRegisteredUsers: Query[Long] = Query.selectSingle { implicit connection =>
+  def countOfRegisteredUsers: Query[Long] = Query { implicit connection =>
     SQL"SELECT COUNT(*) FROM accounts".parseTo[Long]
-  }
+  }.uniqueResult
 
   def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = Query { implicit connection =>
     SQL"""

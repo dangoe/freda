@@ -33,9 +33,9 @@ object UserQueries {
     SQL"delete from users where id = $id".executeUpdate()
   }
 
-  def findById(id: Long): Query[Option[User]] = Query.selectSingleOpt { implicit connection =>
+  def findById(id: Long): Query[Option[User]] = Query { implicit connection =>
     SQL"select * from users where id = $id".parseTo[User]
-  }
+  }.uniqueResultOpt
 
   def findAllByName(name: String): Query[Seq[User]] = Query { implicit connection =>
     SQL"select * from users where name = $name".parseTo[User]

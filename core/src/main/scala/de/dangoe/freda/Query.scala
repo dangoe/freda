@@ -17,6 +17,8 @@ package de.dangoe.freda
 
 import java.sql.Connection
 
+import scala.collection.SeqLike
+
 sealed trait Query[+A] {
 
   import Query._
@@ -36,6 +38,8 @@ sealed trait Query[+A] {
 
 object Query {
 
+  import scala.language.implicitConversions
+
   case class Result[A](result: A) extends Query[A] {
     override def execute()(implicit connection: Connection): A = result
   }
@@ -47,25 +51,31 @@ object Query {
   def successful[A](result: A): Query[A] = Result(result)
   def failed(t: Throwable): Query[Nothing] = Failure(t)
 
-  @throws[IllegalArgumentException]
-  def selectSingle[A](op: WithConnection[Seq[A]]): Query[A] = Query[A] { connection =>
-    val resultSet = op(connection)
-    require(resultSet.length == 1, "Result set must contain exactly one row.")
-    resultSet.head
-  }
-
-  @throws[IllegalArgumentException]
-  def selectSingleOpt[A](op: WithConnection[Seq[A]]): Query[Option[A]] = Query[Option[A]] { connection =>
-    val resultSet = op(connection)
-    require(resultSet.length <= 1, "Result set must contain exactly zero or one rows.")
-    resultSet.headOption
-  }
-
   def apply[A](op: WithConnection[A]): Query[A] = new Query[A] {
     override def execute()(implicit connection: Connection): A = op(connection)
   }
 
   private class FlatMappedQuery[+A, B](query: Query[A], fun: A => Query[B]) extends Query[B] {
     override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
+  }
+
+  implicit class QueryWithSafeGet[T](query: Query[Option[T]]) {
+    def getOrThrow(t: Exception): Query[T] = query.flatMap {
+      case Some(value) => Query.successful(value)
+      case None => Query.failed(t)
+    }
+  }
+
+  implicit class WithSeqLikeResult[A](query: Query[SeqLike[A, _]]) {
+
+    def uniqueResult: Query[A] = query.map { seq =>
+      require(seq.length == 1, "Result set must contain exactly one row.")
+      seq.head
+    }
+
+    def uniqueResultOpt: Query[Option[A]] = query.map { seq =>
+      require(seq.length <= 1, "Result set must contain exactly zero or one rows.")
+      seq.headOption
+    }
   }
 }

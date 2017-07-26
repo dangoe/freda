@@ -35,11 +35,4 @@ package object freda {
   implicit class RichSimpleSql(sql: SimpleSql[Row]) {
     def parseTo[A](implicit parser: RowParser[A], connection: Connection): List[A] = sql.as(parser.*)
   }
-
-  implicit class QueryWithSafeGet[T](query: Query[Option[T]]) {
-    def getOrThrow(t: Exception): Query[T] = query.flatMap {
-      case Some(value) => Query.successful(value)
-      case None => Query.failed(t)
-    }
-  }
 }

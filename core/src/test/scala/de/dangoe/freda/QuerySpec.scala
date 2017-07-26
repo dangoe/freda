@@ -31,11 +31,23 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
       "apply the given function." in {
         stringReturningQuery.map(_ => 1).execute() shouldBe 1
       }
+
+      "result in a failed query, if function application results in an exception." in {
+        val query = stringReturningQuery.map(_ => throw new NullPointerException)
+
+        intercept[NullPointerException](query.execute())
+      }
     }
 
     "flatMapped" should {
       "apply the given function." in {
         stringReturningQuery.flatMap(_ => Query(_ => 1)).execute() shouldBe 1
+      }
+
+      "result in a failed query, if function application results in an exception." in {
+        val query = stringReturningQuery.flatMap(_ => throw new NullPointerException)
+
+        intercept[NullPointerException](query.execute())
       }
     }
 
@@ -66,6 +78,62 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
     "throw the corresponding exception when executed" in {
       intercept[NullPointerException] {
         Query.failed(new NullPointerException).execute()
+      }
+    }
+  }
+
+  "Unique result selection" when {
+    "optional" should {
+      "return 'None', if the result set is empty." in {
+        Query.successful(Nil).uniqueResultOpt.execute() should not be defined
+      }
+
+      "return the unique element, if result set does contain exactly one element." in {
+        Query.successful(Seq("a")).uniqueResultOpt.execute() shouldBe Some("a")
+      }
+
+      "result in a failed query with an IllegalArgumentException, if the result set contains more than one element." in {
+        intercept[IllegalArgumentException] {
+          Query.successful(Seq("a", "b")).uniqueResultOpt.execute()
+        }
+      }
+    }
+
+    "non-optional" should {
+      "return the element, if the result set only contains this element." in {
+        Query.successful(Seq("a")).uniqueResult.execute() shouldBe "a"
+      }
+
+      "result in a failed query with an IllegalArgumentException" when {
+        "the result set is empty." in {
+          intercept[IllegalArgumentException] {
+            Query.successful(Nil).uniqueResult.execute()
+          }
+        }
+
+        "the result set contains more than one element." in {
+          intercept[IllegalArgumentException] {
+            Query.successful(Seq("a", "b")).uniqueResult.execute()
+          }
+        }
+      }
+    }
+  }
+
+  "Safe get operation" should {
+    "return the element, if query does return an element." in {
+      Query.successful(Some("a")).getOrThrow(new NullPointerException).execute() shouldBe "a"
+    }
+
+    "result in a failed query containing the defined exception, if query does return 'None'." in {
+      intercept[NullPointerException] {
+        Query.successful(None).getOrThrow(new NullPointerException).execute()
+      }
+    }
+
+    "result in a failed query containing a throw exception, if the execution fails." in {
+      intercept[IllegalStateException] {
+        Query.failed(new IllegalStateException()).getOrThrow(new NullPointerException).execute()
       }
     }
   }
