@@ -51,6 +51,18 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
       }
     }
 
+    "flattened" should {
+      "flatten a Query of Query." in {
+        Query.successful(stringReturningQuery).flatten.execute() shouldBe "a"
+      }
+
+      "return a failed query, if inner query fails." in {
+        intercept[NullPointerException] {
+          Query.successful(Query.failed(new NullPointerException)).flatten.execute()
+        }
+      }
+    }
+
     "filtered" should {
       "result in a successful query" when {
         "filter condition is fulfilled." in {
