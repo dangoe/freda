@@ -34,6 +34,16 @@ sealed trait Query[+A] {
   }
 
   def execute()(implicit connection: Connection): A
+
+  def uniqueResult[B](implicit ev: A <:< SeqLike[B, _]): Query[B] = this.map { seq =>
+    require(seq.length == 1, "Result set must contain exactly one row.")
+    seq.head
+  }
+
+  def uniqueResultOpt[B](implicit ev: A <:< SeqLike[B, _]): Query[Option[B]] = this.map { seq =>
+    require(seq.length <= 1, "Result set must contain exactly zero or one rows.")
+    seq.headOption
+  }
 }
 
 object Query {
@@ -63,19 +73,6 @@ object Query {
     def getOrThrow(t: Exception): Query[T] = query.flatMap {
       case Some(value) => Query.successful(value)
       case None => Query.failed(t)
-    }
-  }
-
-  implicit class WithSeqLikeResult[A](query: Query[SeqLike[A, _]]) {
-
-    def uniqueResult: Query[A] = query.map { seq =>
-      require(seq.length == 1, "Result set must contain exactly one row.")
-      seq.head
-    }
-
-    def uniqueResultOpt: Query[Option[A]] = query.map { seq =>
-      require(seq.length <= 1, "Result set must contain exactly zero or one rows.")
-      seq.headOption
     }
   }
 }
