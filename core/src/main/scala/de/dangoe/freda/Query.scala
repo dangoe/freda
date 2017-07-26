@@ -26,7 +26,7 @@ sealed trait Query[+A] {
   final def map[B](f: A => B): Query[B] = flatMap(r => Query.successful(f(r)))
   final def flatMap[B](f: A => Query[B]): Query[B] = new FlatMappedQuery(this, f)
 
-  final def flatten[B](implicit ev: A <:< Query[B]): Query[B] = new FlatMappedQuery(this, identity[A])
+  final def flatten[B](implicit ev: A <:< Query[B]): Query[B] = flatMap(identity[A])
 
   final def withFilter(pred: A => Boolean): Query[A] = filter(pred)
 
