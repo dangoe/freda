@@ -1,4 +1,4 @@
-# freda.sql
+[logo]: https://github.com/dangoe/freda/img/logo.png "freda.sql"
 [Anorm](https://www.playframework.com/documentation/2.5.x/ScalaAnorm) based **F**unctional **RE**lational **D**atabase **A**ccess
 
 [![Build Status](https://travis-ci.org/dangoe/freda.svg?branch=master)](https://travis-ci.org/dangoe/freda)
