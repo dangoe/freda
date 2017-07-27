@@ -21,13 +21,13 @@ import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 
-object DatabaseWithHikariSupport {
+object HikariConnectionProvider {
 
-  def apply(config: HikariConfig): Database = new Database {
+  def apply(config: HikariConfig): ConnectionProvider = new ConnectionProvider {
 
     private val dataSource = new HikariDataSource(config)
 
-    override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
+    override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
       Future {
         blocking {
           val connection = dataSource.getConnection

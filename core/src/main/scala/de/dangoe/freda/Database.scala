@@ -20,17 +20,15 @@ import java.sql.Connection
 import scala.concurrent._
 import scala.util.control.NonFatal
 
-trait Database {
+class Database protected(connectionProvider: ConnectionProvider) {
 
   import Database._
 
-  protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection]
-
-  final def withConnection[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  def withConnection[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal(ReadWriteConnection)(op)
   }
 
-  final def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal(ReadWriteConnection) { implicit connection =>
       try {
         val result = query.execute()
@@ -44,7 +42,7 @@ trait Database {
     }
   }
 
-  final def executeReadOnly[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  def executeReadOnly[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal(ReadOnlyConnection) { implicit connection =>
       try query.execute()
       finally connection.rollback()
@@ -52,7 +50,7 @@ trait Database {
   }
 
   private def executeInternal[Result](settings: ConnectionSettings)(op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    openConnection(settings).map { connection =>
+    connectionProvider.openConnection(settings).map { connection =>
       connection.setAutoCommit(false)
       try op(connection)
       finally connection.close()
@@ -63,6 +61,12 @@ trait Database {
 object Database {
   private[freda] final val ReadWriteConnection = ConnectionSettings(ReadWrite)
   private[freda] final val ReadOnlyConnection = ConnectionSettings(ReadOnly)
+
+  def apply(connectionProvider: ConnectionProvider): Database = new Database(connectionProvider)
+}
+
+trait ConnectionProvider {
+  def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection]
 }
 
 case class ConnectionSettings(mode: ConnectionMode)

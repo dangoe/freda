@@ -135,22 +135,20 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
     "forward the configured connection mode." in {
       var connectionSetttings: Option[ConnectionSettings] = None
 
-      val database = new Database {
-        override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext) = {
+      val connectionProvider = new ConnectionProvider {
+        override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext) = {
           connectionSetttings = Some(settings)
           Future.successful(stub[Connection])
         }
       }
 
-      whenReady(op(database)) { _ =>
+      whenReady(op(Database(connectionProvider))) { _ =>
         connectionSetttings shouldBe Some(expectedConnectionSettings)
       }
     }
   }
 
-  private class TestDatabase(connectionFactory: => Connection = stub[Connection]) extends Database {
-    override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
-      Future.successful(connectionFactory)
-    }
-  }
+  private class TestDatabase(connectionFactory: => Connection = stub[Connection]) extends Database(new ConnectionProvider {
+    override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext) = Future.successful(connectionFactory)
+  })
 }
