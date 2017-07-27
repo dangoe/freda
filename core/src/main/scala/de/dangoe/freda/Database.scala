@@ -22,14 +22,16 @@ import scala.util.control.NonFatal
 
 trait Database {
 
-  protected def openConnection()(implicit ec: ExecutionContext): Future[Connection]
+  import Database._
+
+  protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection]
 
   final def withConnection[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(op)
+    executeInternal(ReadWriteConnection)(op)
   }
 
   final def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal { implicit connection =>
+    executeInternal(ReadWriteConnection) { implicit connection =>
       try {
         val result = query.execute()
         connection.commit()
@@ -42,19 +44,29 @@ trait Database {
     }
   }
 
-  // TODO Execute in read only mode
   final def executeReadOnly[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal { implicit connection =>
+    executeInternal(ReadOnlyConnection) { implicit connection =>
       try query.execute()
       finally connection.rollback()
     }
   }
 
-  private def executeInternal[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    openConnection().map { connection =>
+  private def executeInternal[Result](settings: ConnectionSettings)(op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
+    openConnection(settings).map { connection =>
       connection.setAutoCommit(false)
       try op(connection)
       finally connection.close()
     }
   }
 }
+
+object Database {
+  private[freda] final val ReadWriteConnection = ConnectionSettings(ReadWrite)
+  private[freda] final val ReadOnlyConnection = ConnectionSettings(ReadOnly)
+}
+
+case class ConnectionSettings(mode: ConnectionMode)
+
+sealed trait ConnectionMode
+case object ReadOnly extends ConnectionMode
+case object ReadWrite extends ConnectionMode

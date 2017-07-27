@@ -27,10 +27,12 @@ object DatabaseWithHikariSupport {
 
     private val dataSource = new HikariDataSource(config)
 
-    override protected def openConnection()(implicit ec: ExecutionContext): Future[Connection] = {
+    override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
       Future {
         blocking {
-          dataSource.getConnection
+          val connection = dataSource.getConnection
+          connection.setReadOnly(settings.mode == ReadOnly)
+          connection
         }
       }
     }

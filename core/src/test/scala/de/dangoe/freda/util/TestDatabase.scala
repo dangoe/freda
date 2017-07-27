@@ -18,7 +18,7 @@ package de.dangoe.freda.util
 import java.sql.{Connection, DriverManager}
 import java.util.Properties
 
-import de.dangoe.freda.Database
+import de.dangoe.freda._
 import org.hsqldb.server.Server
 import org.scalatest.{BeforeAndAfterAll, TestSuite}
 
@@ -41,7 +41,7 @@ trait TestDatabase extends BeforeAndAfterAll {
     server.start()
 
     database = new Database {
-      override protected def openConnection()(implicit ec: ExecutionContext): Future[Connection] = Future {
+      override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = Future {
         val properties = new Properties()
         properties.put("user", "sa")
 

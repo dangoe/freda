@@ -17,6 +17,7 @@ package de.dangoe.freda
 
 import java.sql.Connection
 
+import de.dangoe.freda.Database._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
@@ -32,12 +33,12 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
   "Execution of a 'WithConnection'-instance" should {
 
-    behave like defaultExecutionBehaviour(_.withConnection(_ => "Result"))
+    behave like defaultExecutionBehaviour(_.withConnection(_ => "Result"), ReadWriteConnection)
   }
 
   "Execution of an arbitrary query" should {
 
-    behave like defaultExecutionBehaviour(_.execute(aSuccessfulQuery))
+    behave like defaultExecutionBehaviour(_.execute(aSuccessfulQuery), ReadWriteConnection)
 
     "commit the transaction following a successful execution." in {
       val connection = stub[Connection]
@@ -75,7 +76,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
   "Read only execution of an arbitrary query" should {
 
-    behave like defaultExecutionBehaviour(_.executeReadOnly(aSuccessfulQuery))
+    behave like defaultExecutionBehaviour(_.executeReadOnly(aSuccessfulQuery), ReadOnlyConnection)
 
     "not commit the transaction." in {
       val connection = stub[Connection]
@@ -99,7 +100,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
     }
   }
 
-  private def defaultExecutionBehaviour[S](op: Database => Future[S]): Unit = {
+  private def defaultExecutionBehaviour[S](op: Database => Future[S], expectedConnectionSettings: ConnectionSettings): Unit = {
 
     "force 'autoCommit=false'." in {
       val connection = stub[Connection]
@@ -121,7 +122,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
       }
     }
 
-    "close the opened connection following a failed execution" in {
+    "close the opened connection following a failed execution." in {
       val connection = stub[Connection]
 
       val database = new TestDatabase(connection)
@@ -130,10 +131,25 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
         (connection.close _).verify().once()
       }
     }
+
+    "forward the configured connection mode." in {
+      var connectionSetttings: Option[ConnectionSettings] = None
+
+      val database = new Database {
+        override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext) = {
+          connectionSetttings = Some(settings)
+          Future.successful(stub[Connection])
+        }
+      }
+
+      whenReady(op(database)) { _ =>
+        connectionSetttings shouldBe Some(expectedConnectionSettings)
+      }
+    }
   }
 
   private class TestDatabase(connectionFactory: => Connection = stub[Connection]) extends Database {
-    override protected def openConnection()(implicit ec: ExecutionContext): Future[Connection] = {
+    override protected def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
       Future.successful(connectionFactory)
     }
   }
