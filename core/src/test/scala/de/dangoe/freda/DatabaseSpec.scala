@@ -132,7 +132,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
       }
     }
 
-    "forward the configured connection mode." in {
+    "forward the configured connection settings." in {
       var connectionSetttings: Option[ConnectionSettings] = None
 
       val connectionProvider = new ConnectionProvider {
