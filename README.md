@@ -1,8 +1,8 @@
 ![freda.sql](https://raw.githubusercontent.com/dangoe/freda/master/images/freda_logo.png)
 
-[Anorm](https://www.playframework.com/documentation/2.6.x/Anorm) based **F**unctional **RE**lational **D**atabase **A**ccess
-
 [![Build Status](https://travis-ci.org/dangoe/freda.svg?branch=master)](https://travis-ci.org/dangoe/freda)
+---
+[Anorm](https://www.playframework.com/documentation/2.6.x/Anorm) based **F**unctional **RE**lational **D**atabase **A**ccess
 
 ## Disclaimer
 This library is still in an experimental state and under active development.
