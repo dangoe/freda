@@ -25,10 +25,10 @@ lazy val core = (project in file("core"))
     name := "freda-core"
   )
 
-lazy val `anorm-support` = (project in file("anorm-support"))
+lazy val `anorm` = (project in file("anorm"))
   .settings(
     commonSettings,
-    name := "freda-anorm-support",
+    name := "freda-anorm",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "anorm" % "2.6.0-M1"
     )
