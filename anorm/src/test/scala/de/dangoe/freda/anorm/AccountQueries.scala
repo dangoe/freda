@@ -19,7 +19,7 @@ import java.time.{Instant, LocalDate}
 
 import anorm.SqlParser._
 import anorm._
-import de.dangoe.freda.Query
+import de.dangoe.freda._
 
 object AccountQueries {
 

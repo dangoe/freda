@@ -17,4 +17,10 @@ package de.dangoe.freda.anorm
 
 import java.time.Instant
 
+import anorm._
+
 case class User(id: Option[Long], name: String, createdAt: Instant)
+
+object User {
+  final implicit val Parser: RowParser[User] = Macro.parser[User]("id", "name", "created_at")
+}

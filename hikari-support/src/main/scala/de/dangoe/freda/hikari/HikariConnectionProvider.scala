@@ -39,3 +39,7 @@ class HikariConnectionProvider private[freda](config: HikariConfig) extends Conn
 
   protected def createDataSource(config: HikariConfig): DataSource = new HikariDataSource(config)
 }
+
+object HikariConnectionProvider {
+  def apply(config: HikariConfig): ConnectionProvider = new HikariConnectionProvider(config)
+}

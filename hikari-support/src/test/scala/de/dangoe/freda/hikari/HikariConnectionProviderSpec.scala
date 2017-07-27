@@ -55,7 +55,7 @@ class HikariConnectionProviderSpec extends WordSpec with Matchers with MockFacto
     (datasource.getConnection _: () => Connection).expects().returns(connection)
 
     new HikariConnectionProvider(stub[HikariConfig]) {
-      override protected def createDataSource(config: HikariConfig) = datasource
+      override protected def createDataSource(config: HikariConfig): DataSource = datasource
     }
   }
 }
