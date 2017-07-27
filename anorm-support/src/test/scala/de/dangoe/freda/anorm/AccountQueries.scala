@@ -13,12 +13,13 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda
+package de.dangoe.freda.anorm
 
 import java.time.{Instant, LocalDate}
 
 import anorm.SqlParser._
 import anorm._
+import de.dangoe.freda.Query
 
 object AccountQueries {
 

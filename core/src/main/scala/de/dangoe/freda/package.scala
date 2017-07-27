@@ -17,22 +17,7 @@ package de.dangoe
 
 import java.sql.Connection
 
-import anorm._
-
 package object freda {
 
-  import scala.language.implicitConversions
-
   type WithConnection[A] = Connection => A
-
-  implicit val stringScalarParser: RowParser[String] = SqlParser.scalar[String]
-  implicit val booleanScalarParser: RowParser[Boolean] = SqlParser.scalar[Boolean]
-  implicit val intScalarParser: RowParser[Int] = SqlParser.scalar[Int]
-  implicit val longScalarParser: RowParser[Long] = SqlParser.scalar[Long]
-  implicit val floatScalarParser: RowParser[Float] = SqlParser.scalar[Float]
-  implicit val doubleScalarParser: RowParser[Double] = SqlParser.scalar[Double]
-
-  implicit class RichSimpleSql(sql: SimpleSql[Row]) {
-    def parseTo[A](implicit parser: RowParser[A], connection: Connection): List[A] = sql.as(parser.*)
-  }
 }

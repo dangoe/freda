@@ -13,11 +13,11 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda
+package de.dangoe.freda.anorm
 
 import java.util.UUID
 
-import de.dangoe.freda.util.TestDatabase
+import de.dangoe.freda.anorm.util.TestDatabase
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}

@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.util
+package de.dangoe.freda.anorm.util
 
 import java.sql.{Connection, DriverManager}
 import java.util.Properties

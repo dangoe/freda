@@ -22,11 +22,17 @@ lazy val root = (project in file("."))
 lazy val core = (project in file("core"))
   .settings(
     commonSettings,
-    name := "freda-core",
+    name := "freda-core"
+  )
+
+lazy val `anorm-support` = (project in file("anorm-support"))
+  .settings(
+    commonSettings,
+    name := "freda-anorm-support",
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "anorm" % "2.6.0-M1"
     )
-  )
+  ) dependsOn core
 
 lazy val `hikari-support` = (project in file("hikari-support"))
   .settings(

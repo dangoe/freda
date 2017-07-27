@@ -13,14 +13,15 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda
+package de.dangoe.freda.anorm
 
-import java.time.Instant
+import de.dangoe.freda.Query
+import de.dangoe.freda.Query.{Failure, Result}
 
-import anorm._
+import scala.util.Random
 
-case class User(id: Option[Long], name: String, createdAt: Instant)
+object TestQueries {
 
-object User {
-  final implicit val Parser: RowParser[User] = Macro.parser[User]("id", "name", "created_at")
+  def randomInt: Query[Int] = Result(Random.nextInt())
+  def alwaysFailing: Query[Unit] = Failure(new IllegalStateException("Lorem ipsum"))
 }
