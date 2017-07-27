@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, `hikari-support`)
+  .aggregate(core, anorm, `hikari-support`, testapp)
   .settings(
     commonSettings,
     name := "freda-parent"
@@ -42,3 +42,13 @@ lazy val `hikari-support` = (project in file("hikari-support"))
       "com.zaxxer" % "HikariCP" % "2.6.3"
     )
   ) dependsOn core
+
+
+lazy val `testapp` = (project in file("testapp"))
+  .settings(
+    commonSettings,
+    name := "freda-testapp",
+    libraryDependencies ++= Seq(
+      "org.postgresql" % "postgresql" % "42.1.3"
+    )
+  ) dependsOn(core, anorm, `hikari-support`)
