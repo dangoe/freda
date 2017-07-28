@@ -1,8 +1,8 @@
 lazy val commonSettings = Seq(
   organization := "de.dangoe",
   version := "0.0.1-SNAPSHOT",
-  scalaVersion := "2.12.2",
-  crossScalaVersions := Seq("2.11.8", "2.12.2"),
+  scalaVersion := "2.12.3",
+  crossScalaVersions := Seq("2.11.8", "2.12.3"),
   scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation"),
   updateOptions := updateOptions.value.withCachedResolution(true),
   libraryDependencies ++= Seq(
