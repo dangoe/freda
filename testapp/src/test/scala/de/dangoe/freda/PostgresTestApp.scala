@@ -17,9 +17,9 @@ package de.dangoe.freda
 
 import java.util.UUID
 
-import _root_.anorm.SqlParser._
 import _root_.anorm._
 import com.zaxxer.hikari.HikariConfig
+import de.dangoe.freda.anorm._
 import de.dangoe.freda.hikari.HikariConnectionProvider
 
 import scala.concurrent.duration.DurationDouble
@@ -58,11 +58,7 @@ object PostgresTestApp {
         val future = database.executeReadOnly {
           for {
             result <- Query { implicit connection =>
-              SQL"select * from users".as {
-                (get[Long](1) ~ get[String](2)).map {
-                  case n ~ p => (n, p)
-                }.*
-              }
+              SQL"select id,name,name,name,name,name,name,name,name  from users limit 1".selectAsTuple[Long, String, String, String, String, String, String, String, String]
             }
           } yield result
         }

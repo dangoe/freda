@@ -17,7 +17,6 @@ package de.dangoe.freda.anorm
 
 import java.time.{Instant, LocalDate}
 
-import anorm.SqlParser._
 import anorm._
 import de.dangoe.freda._
 
@@ -28,11 +27,11 @@ object AccountQueries {
   }
 
   def registeredUsers: Query[Seq[User]] = Query { implicit connection =>
-    SQL"select users.* from users join accounts on users.id = accounts.user".parseTo[User]
+    SQL"select users.* from users join accounts on users.id = accounts.user".selectAs[User]
   }
 
   def countOfRegisteredUsers: Query[Long] = Query { implicit connection =>
-    SQL"SELECT COUNT(*) FROM accounts".parseTo[Long]
+    SQL"SELECT COUNT(*) FROM accounts".selectAs[Long]
   }.uniqueResult
 
   def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = Query { implicit connection =>
@@ -45,10 +44,6 @@ object AccountQueries {
                   to_date(a1.created_at) AS registered_at
                 FROM accounts AS a1) AS a2
           GROUP BY a2.registered_at
-       """.as {
-      (get[Long](1) ~ get[LocalDate](2)).map {
-        case n ~ p => (n, p)
-      }.*
-    }
+       """.selectAsTuple[Long, LocalDate]
   }
 }
