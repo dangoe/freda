@@ -31,7 +31,7 @@ object AccountQueries {
   }
 
   def countOfRegisteredUsers: Query[Long] = Query { implicit connection =>
-    SQL"SELECT COUNT(*) FROM accounts".selectAs[Long]
+    SQL"SELECT COUNT(*) FROM accounts".selectAsScalar[Long]
   }.uniqueResult
 
   def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = Query { implicit connection =>
