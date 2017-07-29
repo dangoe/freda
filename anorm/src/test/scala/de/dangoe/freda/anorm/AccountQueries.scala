@@ -27,7 +27,7 @@ object AccountQueries {
   }
 
   def registeredUsers: Query[Seq[User]] = Query { implicit connection =>
-    SQL"select users.* from users join accounts on users.id = accounts.user".selectInto[User]
+    SQL"select users.* from users join accounts on users.id = accounts.user".selectAs[User]
   }
 
   def countOfRegisteredUsers: Query[Long] = Query { implicit connection =>

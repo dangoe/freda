@@ -61,7 +61,7 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
       database.execute {
         for {
           _ <- Query(implicit connection => SQL"INSERT INTO example (first_field, third_field) VALUES ($uuid, $timestamp)".executeUpdate())
-          record <- Query(implicit connection => SQL"SELECT * FROM example WHERE first_field = $uuid".selectInto[Example]).uniqueResult
+          record <- Query(implicit connection => SQL"SELECT * FROM example WHERE first_field = $uuid".selectAs[Example]).uniqueResult
         } yield record
       }
     } { record =>

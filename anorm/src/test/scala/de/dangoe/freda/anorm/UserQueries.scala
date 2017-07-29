@@ -35,14 +35,14 @@ object UserQueries {
   }
 
   def findById(id: Long): Query[Option[User]] = Query { implicit connection =>
-    SQL"select * from users where id = $id".selectInto[User]
+    SQL"select * from users where id = $id".selectAs[User]
   }.uniqueResultOpt
 
   def findAllByName(name: String): Query[Seq[User]] = Query { implicit connection =>
-    SQL"select * from users where name = $name".selectInto[User]
+    SQL"select * from users where name = $name".selectAs[User]
   }
 
   def all: Query[Seq[User]] = Query { implicit connection =>
-    SQL"select * from users".selectInto[User]
+    SQL"select * from users".selectAs[User]
   }
 }
