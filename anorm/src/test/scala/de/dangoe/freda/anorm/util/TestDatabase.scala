@@ -25,6 +25,7 @@ import org.scalatest.{BeforeAndAfterAll, TestSuite}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// FIXME Move to some kind of testsupport module
 trait TestDatabase extends BeforeAndAfterAll {
   _: TestSuite =>
 
