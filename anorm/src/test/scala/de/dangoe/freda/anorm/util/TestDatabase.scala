@@ -15,6 +15,7 @@
   */
 package de.dangoe.freda.anorm.util
 
+import java.net.ServerSocket
 import java.sql.{Connection, DriverManager}
 import java.util.Properties
 
@@ -37,7 +38,7 @@ trait TestDatabase extends BeforeAndAfterAll {
     server = new Server()
     server.setDatabaseName(0, "test")
     server.setDatabasePath(0, "mem:test")
-    server.setPort(9001) // TODO Get available local port
+    server.setPort(availableLocalPort)
     server.start()
 
     database = Database(new ConnectionProvider {
@@ -58,5 +59,11 @@ trait TestDatabase extends BeforeAndAfterAll {
     super.afterAll()
 
     server.stop()
+  }
+
+  private def availableLocalPort = {
+    val socket = new ServerSocket(0)
+    try socket.getLocalPort
+    finally if (socket != null) socket.close()
   }
 }
