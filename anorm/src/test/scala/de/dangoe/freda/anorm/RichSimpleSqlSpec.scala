@@ -73,7 +73,7 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
 
   it should "allow to select a single value for one column." in {
     whenReady {
-      database.executeReadOnly(Query(implicit connection => SQL"SELECT 1 FROM (VALUES(0))".selectAsScalar[Long]).uniqueResult)
+      database.executeReadOnly(Query(implicit connection => SQL"SELECT 1 FROM (VALUES(0))".selectAsTuple[Long]).uniqueResult)
     } {
       _ shouldBe 1
     }

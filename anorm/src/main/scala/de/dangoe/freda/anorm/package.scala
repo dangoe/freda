@@ -28,7 +28,9 @@ package object anorm {
 
     def selectAs[T](implicit parser: RowParser[T], connection: Connection): List[T] = sql.as(parser.*)
 
-    def selectAsScalar[T](implicit c: Column[T], connection: Connection): List[T] = sql.as(scalar[T](c).*)
+    def selectAsTuple[T](implicit c: Column[T], connection: Connection): List[(T)] = {
+      selectAs(get[T](1), connection)
+    }
 
     def selectAsTuple[T1, T2](implicit c1: Column[T1], c2: Column[T2], connection: Connection): List[(T1, T2)] = {
       val parser = (get[T1](1) ~ get[T2](2)).map {
