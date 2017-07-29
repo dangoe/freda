@@ -72,12 +72,12 @@ object Query {
   implicit class WithSeqLikeResult[A](query: Query[SeqLike[A, _]]) {
 
     def uniqueResult: Query[A] = query.map { seq =>
-      require(seq.length == 1, "Result set must contain exactly one row.")
+      require(seq.length == 1, s"Result set must contain exactly one row, but was $seq")
       seq.head
     }
 
     def uniqueResultOpt: Query[Option[A]] = query.map { seq =>
-      require(seq.length <= 1, "Result set must contain exactly zero or one rows.")
+      require(seq.length <= 1, s"Result set must contain exactly zero or one rows, but was $seq")
       seq.headOption
     }
   }
