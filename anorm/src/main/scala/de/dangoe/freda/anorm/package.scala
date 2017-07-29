@@ -28,7 +28,7 @@ package object anorm {
 
     def selectAs[T](implicit parser: RowParser[T], connection: Connection): List[T] = sql.as(parser.*)
 
-    def selectAsTuple[T](implicit c: Column[T], connection: Connection): List[(T)] = {
+    def selectAsTuple[T](implicit c: Column[T], connection: Connection): List[T] = {
       selectAs(get[T](1), connection)
     }
 
