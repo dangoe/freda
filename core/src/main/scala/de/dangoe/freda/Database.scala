@@ -24,36 +24,49 @@ class Database protected(connectionProvider: ConnectionProvider) {
 
   import Database._
 
-  def withConnection[Result](op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadWriteConnection)(op)
+  def withConnection[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+    executeInternal(ReadWriteConnection)(connection => Future.successful(op(connection)))
   }
 
   def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal(ReadWriteConnection) { implicit connection =>
-      try {
-        val result = query.execute()
-        connection.commit()
-        result
-      } catch {
+      query.execute().recover {
         case NonFatal(e) =>
           connection.rollback()
           throw e
+      }.map { result =>
+        connection.commit()
+        result
       }
     }
   }
 
   def executeReadOnly[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
     executeInternal(ReadOnlyConnection) { implicit connection =>
-      try query.execute()
-      finally connection.rollback()
+      query.execute().recover {
+        case NonFatal(e) =>
+          connection.rollback()
+          throw e
+      }.map { result =>
+        connection.rollback()
+        result
+      }
     }
   }
 
-  private def executeInternal[Result](settings: ConnectionSettings)(op: WithConnection[Result])(implicit ec: ExecutionContext): Future[Result] = {
+  private def executeInternal[Result](settings: ConnectionSettings)(op: Connection => Future[Result])(implicit ec: ExecutionContext): Future[Result] = {
     connectionProvider.openConnection(settings).map { connection =>
       connection.setAutoCommit(false)
-      try op(connection)
-      finally connection.close()
+      connection
+    }.flatMap { connection =>
+      op(connection).recover {
+        case NonFatal(e) =>
+          connection.close()
+          throw e
+      }.map { result =>
+        connection.close()
+        result
+      }
     }
   }
 }
