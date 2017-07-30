@@ -5,7 +5,6 @@ package de.dangoe.freda.jooq.generated.public
 
 
 import de.dangoe.freda.jooq.generated.public.tables.Accounts
-import de.dangoe.freda.jooq.generated.public.tables.Example
 import de.dangoe.freda.jooq.generated.public.tables.Users
 
 import javax.annotation.Generated
@@ -29,11 +28,6 @@ object Tables {
    * The table <code>PUBLIC.ACCOUNTS</code>.
    */
   val ACCOUNTS = de.dangoe.freda.jooq.generated.public.tables.Accounts.ACCOUNTS
-
-  /**
-   * The table <code>PUBLIC.EXAMPLE</code>.
-   */
-  val EXAMPLE = de.dangoe.freda.jooq.generated.public.tables.Example.EXAMPLE
 
   /**
    * The table <code>PUBLIC.USERS</code>.

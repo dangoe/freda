@@ -40,7 +40,7 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
       } yield (),
       5.seconds)
 
-    val stream : InputStream = getClass.getResourceAsStream("/usersH2.xml")
+    val stream : InputStream = getClass.getResourceAsStream("/H2.xml")
     val source = scala.io.Source.fromInputStream(stream)
     GenerationTool.generate(source.mkString)
     source.close()

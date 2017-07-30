@@ -5,10 +5,8 @@ package de.dangoe.freda.jooq.generated.public
 
 
 import de.dangoe.freda.jooq.generated.public.tables.Accounts
-import de.dangoe.freda.jooq.generated.public.tables.Example
 import de.dangoe.freda.jooq.generated.public.tables.Users
 import de.dangoe.freda.jooq.generated.public.tables.records.AccountsRecord
-import de.dangoe.freda.jooq.generated.public.tables.records.ExampleRecord
 import de.dangoe.freda.jooq.generated.public.tables.records.UsersRecord
 
 import java.lang.Long
@@ -39,7 +37,6 @@ object Keys {
   // IDENTITY definitions
   // -------------------------------------------------------------------------
 
-  val IDENTITY_EXAMPLE = Identities0.IDENTITY_EXAMPLE
   val IDENTITY_USERS = Identities0.IDENTITY_USERS
 
   // -------------------------------------------------------------------------
@@ -47,7 +44,6 @@ object Keys {
   // -------------------------------------------------------------------------
 
   val SYS_PK_10096 = UniqueKeys0.SYS_PK_10096
-  val SYS_PK_10102 = UniqueKeys0.SYS_PK_10102
   val SYS_PK_10092 = UniqueKeys0.SYS_PK_10092
 
   // -------------------------------------------------------------------------
@@ -60,13 +56,11 @@ object Keys {
   // -------------------------------------------------------------------------
 
   private object Identities0 extends AbstractKeys {
-    val IDENTITY_EXAMPLE : Identity[ExampleRecord, Long] = AbstractKeys.createIdentity(Example.EXAMPLE, Example.EXAMPLE.ID)
     val IDENTITY_USERS : Identity[UsersRecord, Long] = AbstractKeys.createIdentity(Users.USERS, Users.USERS.ID)
   }
 
   private object UniqueKeys0 extends AbstractKeys {
     val SYS_PK_10096 : UniqueKey[AccountsRecord] = AbstractKeys.createUniqueKey(Accounts.ACCOUNTS, "SYS_PK_10096", Accounts.ACCOUNTS.USER)
-    val SYS_PK_10102 : UniqueKey[ExampleRecord] = AbstractKeys.createUniqueKey(Example.EXAMPLE, "SYS_PK_10102", Example.EXAMPLE.ID)
     val SYS_PK_10092 : UniqueKey[UsersRecord] = AbstractKeys.createUniqueKey(Users.USERS, "SYS_PK_10092", Users.USERS.ID)
   }
 }

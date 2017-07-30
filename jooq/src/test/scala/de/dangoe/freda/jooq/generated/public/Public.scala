@@ -6,7 +6,6 @@ package de.dangoe.freda.jooq.generated.public
 
 import de.dangoe.freda.jooq.generated.DefaultCatalog
 import de.dangoe.freda.jooq.generated.public.tables.Accounts
-import de.dangoe.freda.jooq.generated.public.tables.Example
 import de.dangoe.freda.jooq.generated.public.tables.Users
 
 import java.util.ArrayList
@@ -53,7 +52,6 @@ class Public extends SchemaImpl("PUBLIC", DefaultCatalog.DEFAULT_CATALOG) {
   private def getTables0(): List[Table[_]] = {
     return Arrays.asList[Table[_]](
       Accounts.ACCOUNTS,
-      Example.EXAMPLE,
       Users.USERS)
   }
 }

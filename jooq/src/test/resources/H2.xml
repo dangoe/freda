@@ -11,7 +11,7 @@
         <database>
             <name>org.jooq.util.hsqldb.HSQLDBDatabase</name>
             <includes>public\..*</includes>
-            <excludes></excludes>
+            <excludes>example</excludes>
         </database>
         <target>
             <packageName>de.dangoe.freda.jooq.generated</packageName>
