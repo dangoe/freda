@@ -35,6 +35,8 @@ trait TestDatabase extends BeforeAndAfterAll {
   override protected def beforeAll(): Unit = {
     super.beforeAll()
 
+    Class.forName("org.hsqldb.jdbcDriver")
+
     server = new Server()
     server.setDatabaseName(0, "test")
     server.setDatabasePath(0, "mem:test")

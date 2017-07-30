@@ -63,7 +63,7 @@ lazy val `testapp` = (project in file("testapp"))
     )
   ) dependsOn(core, anorm, jooq, `hikari-support`)
 
-lazy val `testsupport` = (project in file("testsupport"))
+lazy val testsupport = (project in file("testsupport"))
   .settings(
     commonSettings,
     name := "freda-testsupport",
