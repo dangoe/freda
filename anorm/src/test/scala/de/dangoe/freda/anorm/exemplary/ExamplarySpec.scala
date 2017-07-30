@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.anorm
+package de.dangoe.freda.anorm.exemplary
 
 import java.util.UUID
 
@@ -25,7 +25,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
+class ExamplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -207,25 +207,6 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
 
     whenReady(database.executeReadOnly(AccountQueries.countOfRegisteredUsersByDate)) {
       _ should not be empty
-    }
-  }
-
-  it should "not map a failed query." in {
-    whenReady(
-      database.executeReadOnly {
-        for {
-          _ <- TestQueries.alwaysFailing
-          randomInt <- TestQueries.randomInt
-        } yield randomInt
-      }.failed
-    ) {
-      _ shouldBe a[IllegalStateException]
-    }
-  }
-
-  it should "allow to wrap a non db operations within a query." in {
-    whenReady(database.executeReadOnly(TestQueries.randomInt)) {
-      _ shouldBe a[java.lang.Integer]
     }
   }
 
