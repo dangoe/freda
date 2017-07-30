@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.jooq
+package de.dangoe.freda.jooq.exemplary
 
 import de.dangoe.freda.Query
 import de.dangoe.freda.Query.{Failure, Result}

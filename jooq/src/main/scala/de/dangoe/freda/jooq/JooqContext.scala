@@ -1,4 +1,4 @@
-package de.dangoe.freda.jooq.util
+package de.dangoe.freda.jooq
 
 import java.sql.Connection
 

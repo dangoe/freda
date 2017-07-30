@@ -13,8 +13,9 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.jooq
+package de.dangoe.freda.jooq.exemplary
 
+import java.io.InputStream
 import java.util.UUID
 
 import de.dangoe.freda.anorm.testsupport.TestDatabase
@@ -24,9 +25,8 @@ import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.io.Source
+import scala.concurrent.duration.DurationInt
 
 class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
@@ -40,7 +40,11 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
       } yield (),
       5.seconds)
 
-    GenerationTool.generate(Source.fromResource("usersH2.xml").mkString)
+    val stream : InputStream = getClass.getResourceAsStream("/usersH2.xml")
+    val source = scala.io.Source.fromInputStream(stream)
+    GenerationTool.generate(source.mkString)
+    source.close()
+    stream.close()
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))

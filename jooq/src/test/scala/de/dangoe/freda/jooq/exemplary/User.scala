@@ -1,4 +1,4 @@
-package de.dangoe.freda.jooq
+package de.dangoe.freda.jooq.exemplary
 
 import java.time.LocalDateTime
 

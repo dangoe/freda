@@ -13,15 +13,15 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.jooq
+package de.dangoe.freda.jooq.exemplary
 
 import java.sql.Timestamp
 import java.time.format.DateTimeFormatter
-import java.time.{Instant, LocalDate, LocalDateTime}
+import java.time.{Instant, LocalDate}
 
 import de.dangoe.freda._
+import de.dangoe.freda.jooq.JooqContext
 import de.dangoe.freda.jooq.generated.public.Tables._
-import de.dangoe.freda.jooq.util.JooqContext
 import org.jooq.impl.DSL
 import org.jooq.scalaextensions.Conversions._
 
@@ -70,7 +70,6 @@ object AccountQueries extends JooqContext {
     dsl.selectCount().from(ACCOUNTS).execute()
   }
 
-
   def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = Query { implicit connection =>
     val a1 = ACCOUNTS.as("a1")
     val a2 = dsl
@@ -84,7 +83,7 @@ object AccountQueries extends JooqContext {
       .from(a2)
       .groupBy(a2.field("registered_at"))
 
-    // TODO shitty date mapper
+    // TODO shitty date mapper, maybe custom mapping needed
     result.fetch.asScala.map(r => (r.value1().toLong, LocalDate.parse(r.value2().toString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S"))))
   }
 }

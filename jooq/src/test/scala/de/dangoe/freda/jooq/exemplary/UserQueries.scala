@@ -13,15 +13,14 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.jooq
-
+package de.dangoe.freda.jooq.exemplary
 
 import java.sql.Timestamp
 import java.time.Instant
 
 import de.dangoe.freda.Query
+import de.dangoe.freda.jooq.JooqContext
 import de.dangoe.freda.jooq.generated.public.Tables._
-import de.dangoe.freda.jooq.util.JooqContext
 import org.jooq.scalaextensions.Conversions._
 
 import scala.collection.JavaConverters._
