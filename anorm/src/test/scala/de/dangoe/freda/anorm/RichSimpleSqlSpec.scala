@@ -20,7 +20,7 @@ import java.util.UUID
 
 import anorm._
 import de.dangoe.freda.Query
-import de.dangoe.freda.anorm.util.TestDatabase
+import de.dangoe.freda.anorm.testsupport.TestDatabase
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}

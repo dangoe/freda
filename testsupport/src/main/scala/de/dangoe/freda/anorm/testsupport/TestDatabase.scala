@@ -13,19 +13,18 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package de.dangoe.freda.anorm.util
+package de.dangoe.freda.anorm.testsupport
 
 import java.net.ServerSocket
 import java.sql.{Connection, DriverManager}
 import java.util.Properties
 
-import de.dangoe.freda._
+import de.dangoe.freda.{ConnectionProvider, ConnectionSettings, Database}
 import org.hsqldb.server.Server
 import org.scalatest.{BeforeAndAfterAll, TestSuite}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent._
 
-// FIXME Move to some kind of testsupport module
 trait TestDatabase extends BeforeAndAfterAll {
   _: TestSuite =>
 

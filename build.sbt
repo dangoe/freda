@@ -1,3 +1,5 @@
+lazy val scalatestVersion = "3.0.1"
+
 lazy val commonSettings = Seq(
   organization := "de.dangoe",
   version := "0.0.1-SNAPSHOT",
@@ -6,14 +8,13 @@ lazy val commonSettings = Seq(
   scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation"),
   updateOptions := updateOptions.value.withCachedResolution(true),
   libraryDependencies ++= Seq(
-    "org.hsqldb" % "hsqldb" % "2.4.0" % "test",
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+    "org.scalatest" %% "scalatest" % scalatestVersion % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
   )
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, anorm, `hikari-support`, testapp)
+  .aggregate(core, anorm, `hikari-support`, testapp, testsupport)
   .settings(
     commonSettings,
     name := "freda-parent"
@@ -32,7 +33,7 @@ lazy val `anorm` = (project in file("anorm"))
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "anorm" % "2.6.0-M1"
     )
-  ) dependsOn core
+  ) dependsOn(core, testsupport % "test->compile")
 
 lazy val `hikari-support` = (project in file("hikari-support"))
   .settings(
@@ -43,7 +44,6 @@ lazy val `hikari-support` = (project in file("hikari-support"))
     )
   ) dependsOn core
 
-
 lazy val `testapp` = (project in file("testapp"))
   .settings(
     commonSettings,
@@ -52,3 +52,13 @@ lazy val `testapp` = (project in file("testapp"))
       "org.postgresql" % "postgresql" % "42.1.3"
     )
   ) dependsOn(core, anorm, `hikari-support`)
+
+lazy val `testsupport` = (project in file("testsupport"))
+  .settings(
+    commonSettings,
+    name := "freda-testsupport",
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % scalatestVersion,
+      "org.hsqldb" % "hsqldb" % "2.4.0"
+    )
+  ) dependsOn core
