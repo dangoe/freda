@@ -25,7 +25,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class ExamplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
+class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
