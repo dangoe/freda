@@ -136,7 +136,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
       var connectionSetttings: Option[ConnectionSettings] = None
 
       val connectionProvider = new ConnectionProvider {
-        override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext) = {
+        override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
           connectionSetttings = Some(settings)
           Future.successful(stub[Connection])
         }
@@ -149,6 +149,6 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
   }
 
   private class TestDatabase(connectionFactory: => Connection = stub[Connection]) extends Database(new ConnectionProvider {
-    override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext) = Future.successful(connectionFactory)
+    override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = Future.successful(connectionFactory)
   })
 }
