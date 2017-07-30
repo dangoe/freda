@@ -45,7 +45,7 @@ object AccountQueries extends JooqContext {
 
   def registeredUsers: Query[Seq[User]] = Query { implicit connection =>
     // TODO how does fetchInto work with this syntax?
-    val test = for (r <- dsl(connection)
+    /*val test = for (r <- dsl(connection)
       select(
       USERS.ID,
       USERS.NAME,
@@ -56,7 +56,7 @@ object AccountQueries extends JooqContext {
       fetch
     ) yield {
       r
-    }
+    }*/
 
     dsl.select(
       USERS.ID,
