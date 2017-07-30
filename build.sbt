@@ -14,7 +14,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val root = (project in file("."))
-  .aggregate(core, anorm, `hikari-support`, testapp, testsupport)
+  .aggregate(core, anorm, jooq, `hikari-support`, testapp, testsupport)
   .settings(
     commonSettings,
     name := "freda-parent"
@@ -35,6 +35,16 @@ lazy val `anorm` = (project in file("anorm"))
     )
   ) dependsOn(core, testsupport % "test->compile")
 
+lazy val `jooq` = (project in file("jooq"))
+  .settings(
+    commonSettings,
+    name := "freda-jooq",
+    libraryDependencies ++= Seq(
+      "org.jooq" % "jooq-scala" % "3.9.4",
+      "org.jooq" % "jooq-codegen" % "3.9.4"
+    )
+  ) dependsOn(core, testsupport % "test->compile")
+
 lazy val `hikari-support` = (project in file("hikari-support"))
   .settings(
     commonSettings,
@@ -51,7 +61,7 @@ lazy val `testapp` = (project in file("testapp"))
     libraryDependencies ++= Seq(
       "org.postgresql" % "postgresql" % "42.1.3"
     )
-  ) dependsOn(core, anorm, `hikari-support`)
+  ) dependsOn(core, anorm, jooq, `hikari-support`)
 
 lazy val `testsupport` = (project in file("testsupport"))
   .settings(
