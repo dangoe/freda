@@ -18,6 +18,7 @@ package de.dangoe.freda
 import java.sql.Connection
 
 import scala.collection.SeqLike
+import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait Query[+A] {
 
@@ -35,7 +36,7 @@ sealed trait Query[+A] {
     else Query.failed(new NoSuchElementException)
   }
 
-  def execute()(implicit connection: Connection): A
+  def execute()(implicit connection: Connection, ec: ExecutionContext): Future[A]
 }
 
 object Query {
@@ -43,22 +44,28 @@ object Query {
   import scala.language.implicitConversions
 
   case class Result[A](result: A) extends Query[A] {
-    override def execute()(implicit connection: Connection): A = result
+    override def execute()(implicit connection: Connection, ec: ExecutionContext): Future[A] = Future.successful(result)
   }
 
   case class Failure(t: Throwable) extends Query[Nothing] {
-    override def execute()(implicit connection: Connection): Nothing = throw t
+    override def execute()(implicit connection: Connection, ec: ExecutionContext): Future[Nothing] = Future.failed(t)
   }
 
   def successful[A](result: A): Query[A] = Result(result)
   def failed(t: Throwable): Query[Nothing] = Failure(t)
 
-  def apply[A](op: WithConnection[A]): Query[A] = new Query[A] {
-    override def execute()(implicit connection: Connection): A = op(connection)
+  def apply[A](op: Connection => A): Query[A] = new Query[A] {
+    override def execute()(implicit connection: Connection, ec: ExecutionContext): Future[A] = Future.successful(op(connection))
   }
 
+  def from[A](future: Future[A]): Query[A] = new EventualResultQuery[A](future)
+
   private class FlatMappedQuery[+A, B](query: Query[A], fun: A => Query[B]) extends Query[B] {
-    override def execute()(implicit connection: Connection): B = fun(query.execute()).execute()
+    override def execute()(implicit connection: Connection, ec: ExecutionContext): Future[B] = query.execute().map(fun).flatMap(_.execute())
+  }
+
+  private class EventualResultQuery[+A](future: Future[A]) extends Query[A] {
+    override def execute()(implicit connection: Connection, ec: ExecutionContext): Future[A] = future
   }
 
   implicit class WithOptionResult[T](query: Query[Option[T]]) {

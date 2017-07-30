@@ -18,9 +18,14 @@ package de.dangoe.freda
 import java.sql.Connection
 
 import org.scalamock.scalatest.MockFactory
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
-class QuerySpec extends WordSpec with Matchers with MockFactory {
+import scala.concurrent.Future
+
+class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   private implicit val connection = stub[Connection]
 
@@ -29,36 +34,46 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
   "Query" when {
     "mapped" should {
       "apply the given function." in {
-        stringReturningQuery.map(_ => 1).execute() shouldBe 1
+        whenReady(stringReturningQuery.map(_ => 1).execute()) {
+          _ shouldBe 1
+        }
       }
 
       "result in a failed query, if function application results in an exception." in {
         val query = stringReturningQuery.map(_ => throw new NullPointerException)
 
-        intercept[NullPointerException](query.execute())
+        whenReady(query.execute().failed) {
+          _ shouldBe a[NullPointerException]
+        }
       }
     }
 
     "flatMapped" should {
       "apply the given function." in {
-        stringReturningQuery.flatMap(_ => Query(_ => 1)).execute() shouldBe 1
+        whenReady(stringReturningQuery.flatMap(_ => Query(_ => 1)).execute()) {
+          _ shouldBe 1
+        }
       }
 
       "result in a failed query, if function application results in an exception." in {
         val query = stringReturningQuery.flatMap(_ => throw new NullPointerException)
 
-        intercept[NullPointerException](query.execute())
+        whenReady(query.execute().failed) {
+          _ shouldBe a[NullPointerException]
+        }
       }
     }
 
     "flattened" should {
       "flatten a Query of Query." in {
-        Query.successful(stringReturningQuery).flatten.execute() shouldBe "a"
+        whenReady(Query.successful(stringReturningQuery).flatten.execute()) {
+          _ shouldBe "a"
+        }
       }
 
       "return a failed query, if inner query fails." in {
-        intercept[NullPointerException] {
-          Query.successful(Query.failed(new NullPointerException)).flatten.execute()
+        whenReady(Query.successful(Query.failed(new NullPointerException)).flatten.execute().failed) {
+          _ shouldBe a[NullPointerException]
         }
       }
     }
@@ -66,14 +81,20 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
     "filtered" should {
       "result in a successful query" when {
         "filter condition is fulfilled." in {
-          stringReturningQuery.filter(_ == "a").execute() shouldBe stringReturningQuery.execute()
+          whenReady(for {
+            filtered <- stringReturningQuery.filter(_ == "a").execute()
+            unfiltered <- stringReturningQuery.execute()
+          } yield (filtered, unfiltered)) {
+            case (filtered, unfiltered) =>
+              filtered shouldBe unfiltered
+          }
         }
       }
 
       "result in a failed query" when {
         "filter condition is fulfilled." in {
-          intercept[NoSuchElementException] {
-            stringReturningQuery.filter(_ == "b").execute()
+          whenReady(stringReturningQuery.filter(_ == "b").execute().failed) {
+            _ shouldBe a[NoSuchElementException]
           }
         }
       }
@@ -82,14 +103,30 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
 
   "A successful query" should {
     "return the passed value when executed" in {
-      Query.successful("a").execute() shouldBe "a"
+      whenReady(Query.successful("a").execute()) {
+        _ shouldBe "a"
+      }
     }
   }
 
   "A failed query" should {
     "throw the corresponding exception when executed" in {
-      intercept[NullPointerException] {
-        Query.failed(new NullPointerException).execute()
+      whenReady(Query.failed(new NullPointerException).execute().failed) {
+        _ shouldBe a[NullPointerException]
+      }
+    }
+  }
+
+  "An eventual result query" should {
+    "be successful, if the future completes successfully." in {
+      whenReady(Query.from(Future.successful("a")).execute()) {
+        _ shouldBe "a"
+      }
+    }
+
+    "fail, if the future fails." in {
+      whenReady(Query.from(Future.failed(new NullPointerException)).execute().failed) {
+        _ shouldBe a[NullPointerException]
       }
     }
   }
@@ -97,55 +134,63 @@ class QuerySpec extends WordSpec with Matchers with MockFactory {
   "Unique result selection" when {
     "optional" should {
       "return 'None', if the result set is empty." in {
-        Query.successful(Nil).uniqueResultOpt.execute() should not be defined
+        whenReady(Query.successful(Nil).uniqueResultOpt.execute()) {
+          _ should not be defined
+        }
       }
 
       "return the unique element, if result set does contain exactly one element." in {
-        Query.successful(Seq("a")).uniqueResultOpt.execute() shouldBe Some("a")
+        whenReady(Query.successful(Seq("a")).uniqueResultOpt.execute()) {
+          _ shouldBe Some("a")
+        }
       }
 
       "result in a failed query with an IllegalArgumentException, if the result set contains more than one element." in {
-        intercept[IllegalArgumentException] {
-          Query.successful(Seq("a", "b")).uniqueResultOpt.execute()
+        whenReady(Query.successful(Seq("a", "b")).uniqueResultOpt.execute().failed) {
+          _ shouldBe a[IllegalArgumentException]
         }
       }
     }
 
     "non-optional" should {
       "return the element, if the result set only contains this element." in {
-        Query.successful(Seq("a")).uniqueResult.execute() shouldBe "a"
+        whenReady(Query.successful(Seq("a")).uniqueResult.execute()) {
+          _ shouldBe "a"
+        }
       }
 
       "result in a failed query with an IllegalArgumentException" when {
         "the result set is empty." in {
-          intercept[IllegalArgumentException] {
-            Query.successful(Nil).uniqueResult.execute()
+          whenReady(Query.successful(Nil).uniqueResult.execute().failed) {
+            _ shouldBe a[IllegalArgumentException]
           }
         }
 
         "the result set contains more than one element." in {
-          intercept[IllegalArgumentException] {
-            Query.successful(Seq("a", "b")).uniqueResult.execute()
+          whenReady(Query.successful(Seq("a", "b")).uniqueResult.execute().failed) {
+            _ shouldBe a[IllegalArgumentException]
           }
         }
       }
     }
   }
 
-  "Safe get operation" should {
-    "return the element, if query does return an element." in {
-      Query.successful(Some("a")).getOrThrow(new NullPointerException).execute() shouldBe "a"
-    }
-
-    "result in a failed query containing the defined exception, if query does return 'None'." in {
-      intercept[NullPointerException] {
-        Query.successful(None).getOrThrow(new NullPointerException).execute()
+  "Optional result get or throw" should {
+    "keep the query instance and its result, if the original query was successful and returns some result." in {
+      whenReady(Query.successful(Some("a")).getOrThrow(new NullPointerException).execute()) {
+        _ shouldBe "a"
       }
     }
 
-    "result in a failed query containing a throw exception, if the execution fails." in {
-      intercept[IllegalStateException] {
-        Query.failed(new IllegalStateException()).getOrThrow(new NullPointerException).execute()
+    "map the query to a failed query with a defined exception, if the original query was successful but returns no result." in {
+      whenReady(Query.successful(None).getOrThrow(new NullPointerException).execute().failed) {
+        _ shouldBe a[NullPointerException]
+      }
+    }
+
+    "keep a failed query instance untouched." in {
+      whenReady(Query.failed(new IllegalStateException()).getOrThrow(new NullPointerException).execute().failed) {
+        _ shouldBe a[IllegalStateException]
       }
     }
   }
