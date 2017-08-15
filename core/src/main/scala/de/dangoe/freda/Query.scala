@@ -20,6 +20,28 @@ import java.sql.Connection
 import scala.collection.SeqLike
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * <p>The `Query` monad allows to combine multiple queries (i.e. to be
+  * executed within a single transaction).</p>
+  *
+  * <p><b>Example usage:</b></p>
+  *
+  * <pre>
+  * val combined = for {
+  * &nbsp;&nbsp;one <- Query(_.prepareStatement("select 1 from dual").execute())
+  * &nbsp;&nbsp;if one > 0
+  * &nbsp;&nbsp;two <- Query(_.prepareStatement("select 2 from dual").execute())
+  * } yield (one, two)
+  *
+  * val db = new Database()
+  *
+  * val eventualResult = db.executeReadOnly(combined)
+  *
+  * println(Await.result(eventualResult, 5.seconds))  // Prints (1, 2)
+  * </pre>
+  *
+  * @tparam A The queries result type.
+  */
 sealed trait Query[+A] {
 
   import Query._
