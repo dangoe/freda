@@ -20,27 +20,23 @@ import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDate}
 
 import de.dangoe.freda._
-import de.dangoe.freda.jooq.JooqContext
+import de.dangoe.freda.jooq.{JooqContext, _}
 import de.dangoe.freda.jooq.generated.public.Tables._
 import org.jooq.impl.DSL
-import org.jooq.scalaextensions.Conversions._
 
 import scala.collection.JavaConverters._
 
 object AccountQueries extends JooqContext {
 
   def insert(user: Long, password: String): Query[Option[Long]] = Query { implicit connection =>
-    val i = dsl.insertInto(ACCOUNTS,
+    dsl.insertInto(ACCOUNTS,
       ACCOUNTS.USER,
       ACCOUNTS.PASSWORD,
       ACCOUNTS.CREATED_AT)
       .values(user, password, Timestamp.from(Instant.now))
       .returning(ACCOUNTS.USER)
-      .fetchOptional()
-
-    // TODO Java Optional does not fit naturally to Option here, java.Long not to scala.Long
-    val o = if (i.isPresent) Some(i.get()) else None
-    o.map(r => r.get(ACCOUNTS.USER, classOf[Long]))
+      .fetchOption()
+      .map(r => r.get(ACCOUNTS.USER, classOf[Long]))
   }
 
   def registeredUsers: Query[Seq[User]] = Query { implicit connection =>
