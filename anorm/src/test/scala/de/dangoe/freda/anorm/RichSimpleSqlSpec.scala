@@ -30,7 +30,7 @@ import scala.concurrent.duration.DurationLong
 
 class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   override protected def initDatabase(): Unit = {
     super.initDatabase()
