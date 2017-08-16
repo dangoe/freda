@@ -29,6 +29,7 @@ class HikariConnectionProvider private[freda](config: HikariConfig) extends Conn
 
   override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
     Future {
+      // TODO Is blocking really useful/required here? Check behaviour for many connection requests, but slow query executions.
       blocking {
         val connection = dataSource.getConnection
         connection.setReadOnly(settings.mode == ReadOnly)
