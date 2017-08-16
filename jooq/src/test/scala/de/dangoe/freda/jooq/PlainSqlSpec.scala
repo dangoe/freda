@@ -20,7 +20,7 @@ import java.time.Instant
 import java.util.UUID
 
 import de.dangoe.freda.Query
-import de.dangoe.freda.anorm.testsupport.TestDatabase
+import de.dangoe.freda.testsupport.TestDatabase
 import org.jooq.scalaextensions.Conversions._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}

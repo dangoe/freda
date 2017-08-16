@@ -18,7 +18,7 @@ package de.dangoe.freda.jooq.exemplary
 import java.io.InputStream
 import java.util.UUID
 
-import de.dangoe.freda.anorm.testsupport.TestDatabase
+import de.dangoe.freda.testsupport.TestDatabase
 import org.jooq.util.GenerationTool
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Seconds, Span}
