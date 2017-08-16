@@ -24,6 +24,12 @@ package object anorm {
 
   import scala.language.implicitConversions
 
+  /**
+    * This implicit class provides additional operations for a given
+    * `SimpleSql` for easier usage.
+    *
+    * @param sql The original `SimpleSql` instance.
+    */
   implicit class RichSimpleSql(sql: SimpleSql[Row]) {
 
     def selectAs[T](implicit parser: RowParser[T], connection: Connection): Seq[T] = sql.as(parser.*)
