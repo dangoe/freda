@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter
 import java.time.{Instant, LocalDate}
 
 import de.dangoe.freda._
-import de.dangoe.freda.jooq.{JooqContext, _}
+import de.dangoe.freda.jooq.JooqContext
 import de.dangoe.freda.jooq.generated.public.Tables._
 import org.jooq.impl.DSL
 
