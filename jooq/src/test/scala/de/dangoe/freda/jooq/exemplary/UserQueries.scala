@@ -32,15 +32,14 @@ object UserQueries extends JooqContext {
   }
 
   def insert(name: String): Query[Option[Int]] = Query { implicit connection =>
-    val i = dsl.insertInto(
+    dsl.insertInto(
       USERS,
       USERS.NAME,
       USERS.CREATED_AT)
       .values(name, Timestamp.from(Instant.now))
       .returning(USERS.ID)
-      .fetchOptional()
-    val o = if (i.isPresent) Some(i.get()) else None
-    o.map(r => r.get(USERS.ID, classOf[Int]))
+      .fetchOption()
+      .map(r => r.get(USERS.ID, classOf[Int]))
   }
 
   def delete(id: Long): Query[Int] = Query { implicit connection =>
