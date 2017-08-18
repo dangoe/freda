@@ -27,12 +27,10 @@ class HikariConnectionProvider private[freda](config: HikariConfig) extends Conn
 
   private val dataSource = createDataSource(config)
 
-  override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
-    Future {
-      val connection = dataSource.getConnection
-      connection.setReadOnly(settings.mode == ReadOnly)
-      connection
-    }
+  override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = Future {
+    val connection = dataSource.getConnection
+    connection.setReadOnly(settings.mode == ReadOnly)
+    connection
   }
 
   protected def createDataSource(config: HikariConfig): DataSource = new HikariDataSource(config)
