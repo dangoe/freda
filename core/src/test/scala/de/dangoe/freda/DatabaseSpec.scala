@@ -74,6 +74,11 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
     }
   }
 
+  "Read only execution of a 'WithConnection'-instance" should {
+
+    behave like defaultExecutionBehaviour(_.withConnectionReadOnly(_ => "Result"), ReadOnlyConnection)
+  }
+
   "Read only execution of an arbitrary query" should {
 
     behave like defaultExecutionBehaviour(_.executeReadOnly(aSuccessfulQuery), ReadOnlyConnection)
