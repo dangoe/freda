@@ -85,11 +85,11 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
       case ReadOnly => database.withConnectionReadOnly(tuple._2)
     }
 
-    val queryCount = 1000
+    val insertCount = 1000
     val uuid = UUID.randomUUID()
 
-    val inserts = (1 to queryCount).map(_ => (ReadWrite, insertOneRow(uuid)))
-    val selects = (1 to queryCount).map(_ => (ReadOnly, countRowsWithUuid(uuid)))
+    val inserts = (1 to insertCount).map(_ => (ReadWrite, insertOneRow(uuid)))
+    val selects = (1 to insertCount).map(_ => (ReadOnly, countRowsWithUuid(uuid)))
 
     val combined = inserts.zip(selects).flatMap(t => Seq(t._1, t._2))
 
@@ -99,7 +99,7 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
       val result = resultSet.getInt(1)
       resultSet.close()
 
-      result shouldBe queryCount
+      result shouldBe insertCount
     }
   }
 
