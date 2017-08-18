@@ -67,7 +67,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @return Returns the eventual operation result.
     */
   def withConnection[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
-    execute(Query(op))
+    execute(op)
   }
 
   /**
@@ -89,7 +89,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @return Returns the eventual operation result.
     */
   def withConnectionReadOnly[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
-    executeReadOnly(Query(op))
+    executeReadOnly(op)
   }
 
   /**

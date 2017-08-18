@@ -90,6 +90,8 @@ object Query {
     override def execute()(implicit connection: Connection, ec: ExecutionContext): Future[A] = future
   }
 
+  implicit def wrap[A](op: Connection => A): Query[A] = Query(op)
+
   implicit class WithOptionResult[T](query: Query[Option[T]]) {
 
     def getOrThrow(t: Exception): Query[T] = query.flatMap {
