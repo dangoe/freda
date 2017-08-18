@@ -68,13 +68,8 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
     val inserts = (1 to insertCount).map(_ => database.withConnection(insertOneRow(uuid)))
 
     whenReady(Future.sequence(inserts)) { insertResult =>
-      val resultSet = Await.result(database.withConnectionReadOnly(countRowsWithUuid(uuid)), 5.seconds)
-      resultSet.next()
-      val result = resultSet.getInt(1)
-      resultSet.close()
-
       insertResult.sum shouldBe insertCount
-      result shouldBe insertCount
+      executeCountRowsWithUuid(uuid) shouldBe insertCount
     }
   }
 
@@ -96,12 +91,7 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
     val combined = inserts.zip(selects).flatMap(t => Seq(t._1, t._2))
 
     whenReady(Future.sequence(combined.map(execute))) { _ =>
-      val resultSet = Await.result(database.withConnectionReadOnly(countRowsWithUuid(uuid)), 5.seconds)
-      resultSet.next()
-      val result = resultSet.getInt(1)
-      resultSet.close()
-
-      result shouldBe insertCount
+      executeCountRowsWithUuid(uuid) shouldBe insertCount
     }
   }
 
@@ -115,6 +105,14 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
 
   private def slowQuery[Result](duration: Duration)(result: Result): Query[Result] = Query { _ =>
     Thread.sleep(duration.toMillis)
+    result
+  }
+
+  private def executeCountRowsWithUuid(uuid: UUID) = {
+    val resultSet = Await.result(database.withConnectionReadOnly(countRowsWithUuid(uuid)), 5.seconds)
+    resultSet.next()
+    val result = resultSet.getInt(1)
+    resultSet.close()
     result
   }
 
