@@ -63,7 +63,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @return Returns the eventual operation result.
     */
   def withConnection[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadWriteConnection)(connection => Future.successful(op(connection)))
+    execute(Query(op))
   }
 
   /**
@@ -85,7 +85,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @return Returns the eventual operation result.
     */
   def withConnectionReadOnly[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadOnlyConnection)(connection => Future.successful(op(connection)))
+    executeReadOnly(Query(op))
   }
 
   /**
@@ -102,13 +102,13 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * </pre>
     *
     * @param query The `Query` to be executed.
-    * @param ec The provided `ExecutionContext`.
+    * @param ec    The provided `ExecutionContext`.
     * @tparam Result The operation's result type.
     * @return Returns the eventual operation result.
     */
   def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadWriteConnection) { implicit connection =>
-      query.execute().recover {
+    executeInternal(ReadWriteConnection) { connection =>
+      query.execute()(RestrictedConnection(connection), ec).recover {
         case NonFatal(e) =>
           connection.rollback()
           throw e
@@ -133,13 +133,13 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * </pre>
     *
     * @param query The `Query` to be executed.
-    * @param ec The provided `ExecutionContext`.
+    * @param ec    The provided `ExecutionContext`.
     * @tparam Result The operation's result type.
     * @return Returns the eventual operation result.
     */
   def executeReadOnly[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadOnlyConnection) { implicit connection =>
-      query.execute().recover {
+    executeInternal(ReadOnlyConnection) { connection =>
+      query.execute()(RestrictedConnection(connection), ec).recover {
         case NonFatal(e) =>
           connection.rollback()
           throw e
