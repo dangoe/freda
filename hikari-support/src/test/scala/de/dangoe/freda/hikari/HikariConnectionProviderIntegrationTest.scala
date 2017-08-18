@@ -80,9 +80,11 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
 
   "Mixed inserts and selects" should "be executed correctly." in {
 
-    def execute(tuple: (ConnectionMode, Connection => Any)) = tuple._1 match {
-      case ReadWrite => database.withConnection(tuple._2)
-      case ReadOnly => database.withConnectionReadOnly(tuple._2)
+    def execute(tuple: (ConnectionMode, Connection => Any)) = tuple match {
+      case (connectionMode, query) => connectionMode match {
+        case ReadWrite => database.withConnection(query)
+        case ReadOnly => database.withConnectionReadOnly(query)
+      }
     }
 
     val insertCount = 1000
