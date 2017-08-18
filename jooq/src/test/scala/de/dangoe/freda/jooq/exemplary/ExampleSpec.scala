@@ -25,7 +25,6 @@ import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
