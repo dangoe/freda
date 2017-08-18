@@ -21,7 +21,7 @@ import javax.sql.DataSource
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import de.dangoe.freda.{ConnectionProvider, ConnectionSettings, ReadOnly}
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{ExecutionContext, Future}
 
 class HikariConnectionProvider private[freda](config: HikariConfig) extends ConnectionProvider {
 
@@ -29,12 +29,9 @@ class HikariConnectionProvider private[freda](config: HikariConfig) extends Conn
 
   override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = {
     Future {
-      // TODO Is blocking really useful/required here? Check behaviour for many connection requests, but slow query executions.
-      blocking {
-        val connection = dataSource.getConnection
-        connection.setReadOnly(settings.mode == ReadOnly)
-        connection
-      }
+      val connection = dataSource.getConnection
+      connection.setReadOnly(settings.mode == ReadOnly)
+      connection
     }
   }
 
