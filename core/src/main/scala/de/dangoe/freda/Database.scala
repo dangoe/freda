@@ -25,6 +25,10 @@ import scala.util.control.NonFatal
   * operations requiring a `java.sql.Connection` (i.e. `java.sql.PreparedStatement`
   * creations / executions or [[de.dangoe.freda.Query]] executions). </p>
   *
+  * <p>It will <u>never</u> provide the currently active raw `Connection` to an executed
+  * `Query` or other generic operation. The `Connection` is passed as [[de.dangoe.freda.RestrictedConnection]]
+  * instead.</p>
+  *
   * <p><b>Example usage:</b></p>
   *
   * <pre>
@@ -48,7 +52,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * <p>Executes a given operation that requires a `java.sql.Connection`, while opening
     * a new transaction at the beginning and commits it subsequently.</p>
     *
-    * <p><b>Example usage:</b></p>
+    * <p></p>
     *
     * <pre>
     * val db = new Database()

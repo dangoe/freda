@@ -20,6 +20,12 @@ import java.util.Properties
 import java.{sql, util}
 import java.util.concurrent.Executor
 
+/**
+  * A wrapper that wraps a given [[java.sql.Connection]] and restricts its methods
+  * to non-management operations (i.e. `prepareCall`, `prepareStatement` etc.).
+  *
+  * @param delegate The delegate `Connection`.
+  */
 private[freda] class RestrictedConnection private(delegate: Connection) extends Connection {
 
   override def createArrayOf(typeName: String, elements: Array[AnyRef]): sql.Array = delegate.createArrayOf(typeName, elements)
