@@ -31,7 +31,7 @@ import scala.concurrent.{Await, Future}
 
 class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
-  private implicit val executionConuuid = scala.concurrent.ExecutionContext.global
+  private implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   private val connectionTimeout = 250.milliseconds
 
