@@ -52,7 +52,7 @@ lazy val `hikari-support` = (project in file("hikari-support"))
     libraryDependencies ++= Seq(
       "com.zaxxer" % "HikariCP" % "2.6.3"
     )
-  ) dependsOn core
+  ) dependsOn(core, testsupport % "test->compile")
 
 lazy val `testapp` = (project in file("testapp"))
   .settings(

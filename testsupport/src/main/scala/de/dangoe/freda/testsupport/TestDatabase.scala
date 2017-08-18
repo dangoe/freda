@@ -43,16 +43,18 @@ trait TestDatabase extends BeforeAndAfterAll {
     server.setPort(availableLocalPort)
     server.start()
 
-    database = Database(new ConnectionProvider {
-      override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = Future {
-        val properties = new Properties()
-        properties.put("user", "sa")
-
-        DriverManager.getConnection("jdbc:hsqldb:mem:test", properties)
-      }
-    })
+    database = Database(createConnectionProvider("sa", "jdbc:hsqldb:mem:test"))
 
     initDatabase()
+  }
+
+  protected def createConnectionProvider(username: String, connectionUrl: String): ConnectionProvider = new ConnectionProvider {
+    override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = Future {
+      val properties = new Properties()
+      properties.put("user", username)
+
+      DriverManager.getConnection(connectionUrl, properties)
+    }
   }
 
   protected def initDatabase(): Unit = ()

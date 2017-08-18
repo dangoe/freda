@@ -19,7 +19,8 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
-import de.dangoe.freda.{ConnectionProvider, ConnectionSettings, ReadOnly}
+import de.dangoe.freda.ConnectionMode.ReadOnly
+import de.dangoe.freda.{ConnectionProvider, ConnectionSettings}
 
 import scala.concurrent.{ExecutionContext, Future}
 

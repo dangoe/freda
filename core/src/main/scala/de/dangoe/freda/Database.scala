@@ -177,6 +177,8 @@ class Database protected(connectionProvider: ConnectionProvider) {
 
 object Database {
 
+  import ConnectionMode._
+
   private[freda] final val ReadWriteConnection = ConnectionSettings(ReadWrite)
   private[freda] final val ReadOnlyConnection = ConnectionSettings(ReadOnly)
 
@@ -193,5 +195,8 @@ trait ConnectionProvider {
 case class ConnectionSettings(mode: ConnectionMode)
 
 sealed trait ConnectionMode
-case object ReadOnly extends ConnectionMode
-case object ReadWrite extends ConnectionMode
+
+object ConnectionMode {
+  case object ReadOnly extends ConnectionMode
+  case object ReadWrite extends ConnectionMode
+}
