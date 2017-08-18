@@ -50,7 +50,7 @@ private[freda] class RestrictedConnection private(delegate: Connection) extends 
   override def prepareStatement(sql: String, columnNames: Array[String]): PreparedStatement = delegate.prepareStatement(sql, columnNames)
   override def prepareStatement(sql: String, resultSetType: Int, resultSetConcurrency: Int): PreparedStatement = delegate.prepareStatement(sql, resultSetType, resultSetConcurrency)
   override def prepareStatement(sql: String, resultSetType: Int, resultSetConcurrency: Int, resultSetHoldability: Int): PreparedStatement = delegate.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability)
-  
+
   override def abort(executor: Executor): Unit = throw new UnsupportedOperationException(s"RestrictedConnection does not allow operation 'abort'.")
   override def clearWarnings(): Unit = throw new UnsupportedOperationException(s"RestrictedConnection does not allow operation 'clearWarnings'.")
   override def close(): Unit = throw new UnsupportedOperationException(s"RestrictedConnection does not allow operation 'close'.")
@@ -85,6 +85,6 @@ private[freda] class RestrictedConnection private(delegate: Connection) extends 
   override def unwrap[T](iface: Class[T]): T = throw new UnsupportedOperationException(s"RestrictedConnection does not allow operation 'unwrap'.")
 }
 
-object RestrictedConnection {
+private[freda] object RestrictedConnection {
   def apply(connection: Connection): Connection = new RestrictedConnection(connection)
 }
