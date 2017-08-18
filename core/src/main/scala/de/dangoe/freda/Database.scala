@@ -52,7 +52,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * <p>Executes a given operation that requires a `java.sql.Connection`, while opening
     * a new transaction at the beginning and commits it subsequently.</p>
     *
-    * <p></p>
+    * <p><b>Example usage:</b></p>
     *
     * <pre>
     * val db = new Database()
