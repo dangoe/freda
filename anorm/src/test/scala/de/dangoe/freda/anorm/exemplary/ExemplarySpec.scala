@@ -27,7 +27,9 @@ import scala.concurrent.duration.DurationInt
 
 class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val executionContext = scala.concurrent.ExecutionContext.global
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   override protected def initDatabase(): Unit = {
     super.initDatabase()
@@ -39,8 +41,6 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
       } yield (),
       5.seconds)
   }
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   "Toolkit" should "allow to execute a simple insert and select operation." in {
     val name = createRandomName()

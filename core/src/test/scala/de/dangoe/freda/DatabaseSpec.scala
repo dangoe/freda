@@ -20,13 +20,16 @@ import java.sql.Connection
 import de.dangoe.freda.Database._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Milliseconds, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  private implicit val executionContext = scala.concurrent.ExecutionContext.global
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   private val aSuccessfulQuery = Query.successful("Result")
   private val aFailedQuery = Query.failed(new IllegalStateException())

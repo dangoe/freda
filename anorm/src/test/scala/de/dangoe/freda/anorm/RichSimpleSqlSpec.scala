@@ -32,6 +32,8 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+
   override protected def initDatabase(): Unit = {
     super.initDatabase()
 
@@ -50,8 +52,6 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
       },
       5.seconds)
   }
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   "RichSimpleSql" should "allow to parse a row to a given case class." in {
     val uuid = UUID.randomUUID().toString

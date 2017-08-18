@@ -30,6 +30,10 @@ import scala.concurrent.duration.DurationInt
 
 class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
+  private implicit val executionContext = scala.concurrent.ExecutionContext.global
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+
   override protected def initDatabase(): Unit = {
     super.initDatabase()
 
@@ -46,8 +50,6 @@ class ExampleSpec extends FlatSpec with Matchers with ScalaFutures with TestData
     source.close()
     stream.close()
   }
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   "jOOQ Toolkit" should "allow to execute a simple insert and select operation." in {
     val name = createRandomName()
