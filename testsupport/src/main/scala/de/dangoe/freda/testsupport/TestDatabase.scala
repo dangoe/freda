@@ -17,7 +17,7 @@ package de.dangoe.freda.testsupport
 
 import java.net.ServerSocket
 import java.sql.{Connection, DriverManager}
-import java.util.Properties
+import java.util.{Properties, UUID}
 
 import de.dangoe.freda.{ConnectionProvider, ConnectionSettings, Database}
 import org.hsqldb.server.Server
@@ -37,13 +37,16 @@ trait TestDatabase extends BeforeAndAfterAll {
 
     Class.forName("org.hsqldb.jdbcDriver")
 
+    val uuid = UUID.randomUUID().toString
+
     server = new Server()
-    server.setDatabaseName(0, "test")
-    server.setDatabasePath(0, "mem:test")
+    server.setLogWriter(null)
+    server.setDatabaseName(0, uuid)
+    server.setDatabasePath(0, s"testdb:$uuid")
     server.setPort(availableLocalPort)
     server.start()
 
-    database = Database(createConnectionProvider("sa", "jdbc:hsqldb:mem:test"))
+    database = Database(createConnectionProvider("sa", s"jdbc:hsqldb:testdb:$uuid"))
 
     initDatabase()
   }

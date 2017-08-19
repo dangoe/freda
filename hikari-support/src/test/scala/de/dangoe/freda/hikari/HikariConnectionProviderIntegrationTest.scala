@@ -34,7 +34,7 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val futureTimeout = PatienceConfig(Span(30, Seconds), Span(50, Milliseconds))
 
-  private val connectionTimeout = 5.seconds
+  private val connectionTimeout = 1.seconds
 
   override protected def initDatabase(): Unit = {
     super.initDatabase()
