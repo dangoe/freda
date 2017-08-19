@@ -5,7 +5,7 @@ lazy val commonSettings = Seq(
   version := "0.0.1-SNAPSHOT",
   scalaVersion := "2.12.3",
   crossScalaVersions := Seq("2.11.8", "2.12.3"),
-  scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation"),
+  scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation", "-feature"),
   updateOptions := updateOptions.value.withCachedResolution(true),
   libraryDependencies ++= Seq(
     "org.slf4j" % "slf4j-log4j12" % "1.7.25" % "test",
