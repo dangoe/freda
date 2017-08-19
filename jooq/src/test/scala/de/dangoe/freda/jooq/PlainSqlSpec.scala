@@ -32,8 +32,7 @@ import scala.concurrent.duration.DurationLong
 class PlainSqlSpec extends FlatSpec with Matchers with ScalaFutures with TestDatabase with JooqContext {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   override protected def initDatabase(): Unit = {
     super.initDatabase()

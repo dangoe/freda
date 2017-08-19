@@ -27,8 +27,7 @@ import scala.concurrent.Future
 class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   private implicit val connection = stub[Connection]
 

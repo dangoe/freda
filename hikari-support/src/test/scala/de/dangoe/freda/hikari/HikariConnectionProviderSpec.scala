@@ -29,8 +29,7 @@ import org.scalatest.{Matchers, WordSpec}
 class HikariConnectionProviderSpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   "HikariConnectionProvider" should {
     "open a read only connection, if requested." in {

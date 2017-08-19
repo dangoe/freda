@@ -28,8 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
   private val aSuccessfulQuery = Query.successful("Result")
   private val aFailedQuery = Query.failed(new IllegalStateException())
