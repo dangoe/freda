@@ -184,19 +184,3 @@ object Database {
 
   def apply(connectionProvider: ConnectionProvider): Database = new Database(connectionProvider)
 }
-
-/**
-  * A `ConnectionProvider` allows to eventually open a new `java.sql.JdbcConnection`.
-  */
-trait ConnectionProvider {
-  def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection]
-}
-
-case class ConnectionSettings(mode: ConnectionMode)
-
-sealed trait ConnectionMode
-
-object ConnectionMode {
-  case object ReadOnly extends ConnectionMode
-  case object ReadWrite extends ConnectionMode
-}
