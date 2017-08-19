@@ -8,6 +8,7 @@ lazy val commonSettings = Seq(
   scalacOptions in ThisBuild ++= Seq("-unchecked", "-deprecation"),
   updateOptions := updateOptions.value.withCachedResolution(true),
   libraryDependencies ++= Seq(
+    "org.slf4j" % "slf4j-log4j12" % "1.7.25" % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test"
   )
