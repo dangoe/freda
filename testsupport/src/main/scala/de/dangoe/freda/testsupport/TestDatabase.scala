@@ -21,34 +21,30 @@ import java.util.{Properties, UUID}
 
 import de.dangoe.freda.{ConnectionProvider, ConnectionSettings, Database}
 import org.hsqldb.server.Server
-import org.scalatest.{BeforeAndAfterAll, TestSuite}
 
 import scala.concurrent._
+import scala.concurrent.duration.DurationDouble
 
-trait TestDatabase extends BeforeAndAfterAll {
-  _: TestSuite =>
+trait TestDatabase {
 
-  private var server: Server = _
-
-  protected var database: Database = _
-
-  override protected def beforeAll(): Unit = {
-    super.beforeAll()
-
+  protected def withDatabase(initialization: Database => Future[Unit])(op: Database => Any): Unit = {
     Class.forName("org.hsqldb.jdbcDriver")
 
     val uuid = UUID.randomUUID().toString
 
-    server = new Server()
+    val server = new Server()
     server.setLogWriter(null)
     server.setDatabaseName(0, uuid)
-    server.setDatabasePath(0, s"testdb:$uuid")
+    server.setDatabasePath(0, s"mem:$uuid")
     server.setPort(availableLocalPort)
     server.start()
 
-    database = Database(createConnectionProvider("sa", s"jdbc:hsqldb:testdb:$uuid"))
+    val database = Database(createConnectionProvider("sa", s"jdbc:hsqldb:mem:$uuid"))
+    Await.result(initialization(database), 30.seconds)
 
-    initDatabase()
+    op(database)
+
+    server.stop()
   }
 
   protected def createConnectionProvider(username: String, connectionUrl: String): ConnectionProvider = new ConnectionProvider {
@@ -58,14 +54,6 @@ trait TestDatabase extends BeforeAndAfterAll {
 
       DriverManager.getConnection(connectionUrl, properties)
     }
-  }
-
-  protected def initDatabase(): Unit = ()
-
-  override protected def afterAll(): Unit = {
-    super.afterAll()
-
-    server.stop()
   }
 
   private def availableLocalPort = {
