@@ -34,7 +34,7 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val futureTimeout = PatienceConfig(Span(30, Seconds), Span(50, Milliseconds))
 
-  private val connectionTimeout = 1.second
+  private val connectionTimeout = 5.seconds
 
   private val testDatabaseInitialization: Database => Future[Unit] = {
     _.withConnection(_.prepareStatement("create table test (id bigint identity primary key, uuid uuid)").execute())
