@@ -518,5 +518,5 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
 case class Example(id: Option[Long], firstField: String, secondField: Option[String], thirdField: Instant)
 
 object Example {
-  final implicit val Parser: RowParser[Example] = Macro.parser[Example]("id", "first_field", "second_field", "third_field")
+  implicit val Parser: RowParser[Example] = Macro.parser[Example]("id", "first_field", "second_field", "third_field")
 }

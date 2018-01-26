@@ -22,5 +22,5 @@ import anorm._
 case class Account(user: Option[Long], password: String, createdAt: Instant)
 
 object Account {
-  final implicit val Parser: RowParser[Account] = Macro.parser[Account]("user", "password", "created_at")
+  implicit val Parser: RowParser[Account] = Macro.parser[Account]("user", "password", "created_at")
 }
