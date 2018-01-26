@@ -15,13 +15,13 @@
   */
 package de.dangoe.freda.hikari
 
-import java.sql.{Connection, SQLException, SQLTransientConnectionException}
+import java.sql.{Connection, SQLException}
 import java.util.UUID
 
 import com.zaxxer.hikari.HikariConfig
 import de.dangoe.freda.ConnectionMode._
 import de.dangoe.freda.testsupport.TestDatabase
-import de.dangoe.freda.{ConnectionMode, ConnectionProvider, Database, Query}
+import de.dangoe.freda.{ConnectionMode, ConnectionProvider, Database}
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time._
@@ -46,17 +46,6 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
 
       whenReady(database.withConnectionReadOnly(insertOneRow(uuid)).failed) {
         _ shouldBe a[SQLException]
-      }
-    }
-  }
-
-  "Blocking queries" should "cause a connection timeout." in {
-    withDatabase(testDatabaseInitialization) { database ⇒
-      val slowQueryFactory = slowQuery[String](connectionTimeout * 2) _
-      val queries = (1 to 3).map(_ ⇒ database.executeReadOnly(slowQueryFactory("Result")))
-
-      whenReady(Future.sequence(queries).failed) {
-        _ shouldBe a[SQLTransientConnectionException]
       }
     }
   }
@@ -104,11 +93,6 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
 
   private def countRowsWithUuid(uuid: UUID) = { connection: Connection ⇒
     connection.prepareStatement(s"select count(*) from test where uuid = '${uuid.toString}'").executeQuery()
-  }
-
-  private def slowQuery[Result](duration: Duration)(result: Result): Query[Result] = Query { _ ⇒
-    Thread.sleep(duration.toMillis)
-    result
   }
 
   private def executeCountRowsWithUuid( uuid: UUID)(implicit database:Database) = {

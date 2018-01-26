@@ -23,13 +23,13 @@ import de.dangoe.freda.ConnectionProvider
 import de.dangoe.freda.Database._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Milliseconds, Seconds, Span}
+import org.scalatest.time.{Milliseconds, Minute, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 class HikariConnectionProviderSpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-  private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(1, Minute), Span(150, Milliseconds))
 
   "HikariConnectionProvider" should {
     "open a read only connection, if requested." in {
