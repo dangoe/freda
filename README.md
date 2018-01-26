@@ -7,6 +7,10 @@
 ## Disclaimer
 This library has been created for evaluation purposes. Although it can be considered as feature complete, it has not yet been used in any production environment.
 
+## Usage
+
+An exemplary implementation can be found [here](https://github.com/dangoe/freda/tree/master/anorm/src/test/scala/de/dangoe/freda/anorm/exemplary).
+
 ## License
 
 Copyright 2017 Daniel Götten
