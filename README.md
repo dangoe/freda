@@ -2,10 +2,10 @@
 
 [![Build Status](https://travis-ci.org/dangoe/freda.svg?branch=master)](https://travis-ci.org/dangoe/freda)
 ---
-[Anorm](https://www.playframework.com/documentation/2.6.x/Anorm) based **F**unctional **RE**lational **D**atabase **A**ccess
+[Anorm](https://github.com/playframework/anorm) based **F**unctional **RE**lational **D**atabase **A**ccess
 
 ## Disclaimer
-This library is still in an experimental state and under active development.
+This library has been created for evaluation purposes. Although it can be considered as feature complete, it has not yet been used in any production environment.
 
 ## License
 
