@@ -32,8 +32,8 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
-  private val testDatabaseInitialization: Database => Future[Unit] = _.execute {
-    Query { implicit connection =>
+  private val testDatabaseInitialization: Database ⇒ Future[Unit] = _.execute {
+    Query { implicit connection ⇒
       SQL"""CREATE TABLE example (
               id            BIGINT IDENTITY PRIMARY KEY NOT NULL,
               first_field   VARCHAR(64) NOT NULL,
@@ -44,29 +44,29 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   "RichSimpleSql" should "allow to parse a row to a given case class." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val uuid = UUID.randomUUID().toString
       val timestamp = Instant.now
 
       whenReady {
         database.execute {
           for {
-            _ <- Query(implicit connection => SQL"INSERT INTO example (first_field, third_field) VALUES ($uuid, $timestamp)".executeUpdate())
-            record <- Query(implicit connection => SQL"SELECT * FROM example WHERE first_field = $uuid".selectAs[Example]).uniqueResult
+            _ ← Query(implicit connection ⇒ SQL"INSERT INTO example (first_field, third_field) VALUES ($uuid, $timestamp)".executeUpdate())
+            record ← Query(implicit connection ⇒ SQL"SELECT * FROM example WHERE first_field = $uuid".selectAs[Example]).uniqueResult
           } yield record
         }
-      } { record =>
+      } { record ⇒
         record.firstField shouldBe uuid
         record.secondField shouldBe empty
-        record.thirdField shouldBe timestamp
+        record.thirdField.getEpochSecond shouldBe timestamp.getEpochSecond // Nano time precision problems
       }
     }
   }
 
   it should "allow to select a single value for one column." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1 FROM (VALUES(0))".selectAsTuple[Long]).uniqueResult)
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1 FROM (VALUES(0))".selectAsTuple[Long]).uniqueResult)
       } {
         _ shouldBe 1
       }
@@ -74,10 +74,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for two columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2 FROM (VALUES(0))".selectAsTuple[Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2 FROM (VALUES(0))".selectAsTuple[Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
       }
@@ -85,10 +85,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for three columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3 FROM (VALUES(0))".selectAsTuple[Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3 FROM (VALUES(0))".selectAsTuple[Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -97,10 +97,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for four columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -110,10 +110,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for five columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -124,10 +124,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for six columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -139,10 +139,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for seven columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -155,10 +155,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for eight columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -172,10 +172,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for nine columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -190,10 +190,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for ten columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -209,10 +209,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for eleven columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -229,10 +229,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for twelve columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -250,10 +250,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for thirteen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -272,10 +272,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for fourteen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -295,10 +295,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for fifteen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -319,10 +319,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for sixteen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -344,10 +344,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for seventeen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -370,10 +370,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for eighteen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -397,10 +397,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for nineteen columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -425,10 +425,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for twenty columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -454,10 +454,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for twenty one columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3
@@ -484,10 +484,10 @@ class RichSimpleSqlSpec extends FlatSpec with Matchers with ScalaFutures with Te
   }
 
   it should "allow to select a tuple for twenty two columns." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
-        database.executeReadOnly(Query(implicit connection => SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
-      } { record =>
+        database.executeReadOnly(Query(implicit connection ⇒ SQL"SELECT 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 FROM (VALUES(0))".selectAsTuple[Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long, Long]).uniqueResult)
+      } { record ⇒
         record._1 shouldBe 1
         record._2 shouldBe 2
         record._3 shouldBe 3

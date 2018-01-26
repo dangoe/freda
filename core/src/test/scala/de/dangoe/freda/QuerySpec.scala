@@ -19,7 +19,7 @@ import java.sql.Connection
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Milliseconds, Seconds, Span}
+import org.scalatest.time.{Milliseconds, Minute, Span}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
@@ -27,22 +27,22 @@ import scala.concurrent.Future
 class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFutures {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-  private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(1, Minute), Span(150, Milliseconds))
 
   private implicit val connection = stub[Connection]
 
-  val stringReturningQuery = Query(_ => "a")
+  private val stringReturningQuery = Query(_ ⇒ "a")
 
   "Query" when {
     "mapped" should {
       "apply the given function." in {
-        whenReady(stringReturningQuery.map(_ => 1).execute()) {
+        whenReady(stringReturningQuery.map(_ ⇒ 1).execute()) {
           _ shouldBe 1
         }
       }
 
       "result in a failed query, if function application results in an exception." in {
-        val query = stringReturningQuery.map(_ => throw new NullPointerException)
+        val query = stringReturningQuery.map(_ ⇒ throw new NullPointerException())
 
         whenReady(query.execute().failed) {
           _ shouldBe a[NullPointerException]
@@ -52,13 +52,13 @@ class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFuture
 
     "flatMapped" should {
       "apply the given function." in {
-        whenReady(stringReturningQuery.flatMap(_ => Query(_ => 1)).execute()) {
+        whenReady(stringReturningQuery.flatMap(_ ⇒ Query(_ ⇒ 1)).execute()) {
           _ shouldBe 1
         }
       }
 
       "result in a failed query, if function application results in an exception." in {
-        val query = stringReturningQuery.flatMap(_ => throw new NullPointerException)
+        val query = stringReturningQuery.flatMap(_ ⇒ throw new NullPointerException())
 
         whenReady(query.execute().failed) {
           _ shouldBe a[NullPointerException]
@@ -74,7 +74,7 @@ class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFuture
       }
 
       "return a failed query, if inner query fails." in {
-        whenReady(Query.successful(Query.failed(new NullPointerException)).flatten.execute().failed) {
+        whenReady(Query.successful(Query.failed(new NullPointerException())).flatten.execute().failed) {
           _ shouldBe a[NullPointerException]
         }
       }
@@ -84,10 +84,10 @@ class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFuture
       "result in a successful query" when {
         "filter condition is fulfilled." in {
           whenReady(for {
-            filtered <- stringReturningQuery.filter(_ == "a").execute()
-            unfiltered <- stringReturningQuery.execute()
+            filtered ← stringReturningQuery.filter(_ == "a").execute()
+            unfiltered ← stringReturningQuery.execute()
           } yield (filtered, unfiltered)) {
-            case (filtered, unfiltered) =>
+            case (filtered, unfiltered) ⇒
               filtered shouldBe unfiltered
           }
         }
@@ -113,7 +113,7 @@ class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFuture
 
   "A failed query" should {
     "throw the corresponding exception when executed" in {
-      whenReady(Query.failed(new NullPointerException).execute().failed) {
+      whenReady(Query.failed(new NullPointerException()).execute().failed) {
         _ shouldBe a[NullPointerException]
       }
     }
@@ -127,7 +127,7 @@ class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFuture
     }
 
     "fail, if the future fails." in {
-      whenReady(Query.from(Future.failed(new NullPointerException)).execute().failed) {
+      whenReady(Query.from(Future.failed(new NullPointerException())).execute().failed) {
         _ shouldBe a[NullPointerException]
       }
     }
@@ -179,19 +179,19 @@ class QuerySpec extends WordSpec with Matchers with MockFactory with ScalaFuture
 
   "Optional result get or throw" should {
     "keep the query instance and its result, if the original query was successful and returns some result." in {
-      whenReady(Query.successful(Some("a")).getOrThrow(new NullPointerException).execute()) {
+      whenReady(Query.successful(Some("a")).getOrThrow(new NullPointerException()).execute()) {
         _ shouldBe "a"
       }
     }
 
     "map the query to a failed query with a defined exception, if the original query was successful but returns no result." in {
-      whenReady(Query.successful(None).getOrThrow(new NullPointerException).execute().failed) {
+      whenReady(Query.successful(None).getOrThrow(new NullPointerException()).execute().failed) {
         _ shouldBe a[NullPointerException]
       }
     }
 
     "keep a failed query instance untouched." in {
-      whenReady(Query.failed(new IllegalStateException()).getOrThrow(new NullPointerException).execute().failed) {
+      whenReady(Query.failed(new IllegalStateException()).getOrThrow(new NullPointerException()).execute().failed) {
         _ shouldBe a[IllegalStateException]
       }
     }

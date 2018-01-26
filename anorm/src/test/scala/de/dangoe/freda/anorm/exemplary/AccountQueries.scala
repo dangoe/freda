@@ -23,19 +23,19 @@ import de.dangoe.freda.anorm._
 
 object AccountQueries {
 
-  def insert(user: Long, password: String): Query[Option[Long]] = Query { implicit connection =>
+  def insert(user: Long, password: String): Query[Option[Long]] = Query { implicit connection ⇒
     SQL"insert into accounts (user, password, created_at) values ($user, $password, ${Instant.now})".executeInsert()
   }
 
-  def registeredUsers: Query[Seq[User]] = Query { implicit connection =>
+  def registeredUsers: Query[Seq[User]] = Query { implicit connection ⇒
     SQL"select users.* from users join accounts on users.id = accounts.user".selectAs[User]
   }
 
-  def countOfRegisteredUsers: Query[Long] = Query { implicit connection =>
+  def countOfRegisteredUsers: Query[Long] = Query { implicit connection ⇒
     SQL"SELECT COUNT(*) FROM accounts".selectAsTuple[Long]
   }.uniqueResult
 
-  def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = Query { implicit connection =>
+  def countOfRegisteredUsersByDate: Query[Seq[(Long, LocalDate)]] = Query { implicit connection ⇒
     SQL"""
           SELECT
             count(a2.user_id) AS registrations_per_day,

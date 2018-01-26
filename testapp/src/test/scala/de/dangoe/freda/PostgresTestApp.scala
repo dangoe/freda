@@ -43,11 +43,11 @@ object PostgresTestApp {
 
     val database = Database(HikariConnectionProvider(config))
 
-    Await.result(Future.sequence((1 to 1000).map { i =>
+    Await.result(Future.sequence((1 to 1000).map { i ⇒
       if (i % 2 == 0) {
         val future = database.execute {
           for {
-            id <- Query { implicit connection =>
+            id ← Query { implicit connection ⇒
               SQL"insert into users (name) values (${UUID.randomUUID().toString})".executeInsert()
             }
           } yield id
@@ -57,7 +57,7 @@ object PostgresTestApp {
       } else {
         val future = database.executeReadOnly {
           for {
-            result <- Query { implicit connection =>
+            result ← Query { implicit connection ⇒
               SQL"select id,name,name,name,name,name,name,name,name  from users limit 1".selectAsTuple[Long, String, String, String, String, String, String, String, String]
             }
           } yield result

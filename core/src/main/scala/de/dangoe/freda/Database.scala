@@ -66,7 +66,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @tparam Result The operation's result type.
     * @return Returns the eventual operation result.
     */
-  def withConnection[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+  def withConnection[Result](op: Connection ⇒ Result)(implicit ec: ExecutionContext): Future[Result] = {
     execute(op)
   }
 
@@ -88,7 +88,7 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @tparam Result The operation's result type.
     * @return Returns the eventual operation result.
     */
-  def withConnectionReadOnly[Result](op: Connection => Result)(implicit ec: ExecutionContext): Future[Result] = {
+  def withConnectionReadOnly[Result](op: Connection ⇒ Result)(implicit ec: ExecutionContext): Future[Result] = {
     executeReadOnly(op)
   }
 
@@ -111,12 +111,12 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @return Returns the eventual operation result.
     */
   def execute[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadWriteConnection) { implicit connection =>
+    executeInternal(ReadWriteConnection) { implicit connection ⇒
       executeWithRestrictedConnection(query).recover {
-        case NonFatal(e) =>
+        case NonFatal(e) ⇒
           connection.rollback()
           throw e
-      }.map { result =>
+      }.map { result ⇒
         connection.commit()
         result
       }
@@ -142,12 +142,12 @@ class Database protected(connectionProvider: ConnectionProvider) {
     * @return Returns the eventual operation result.
     */
   def executeReadOnly[Result](query: Query[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    executeInternal(ReadOnlyConnection) { implicit connection =>
+    executeInternal(ReadOnlyConnection) { implicit connection ⇒
       executeWithRestrictedConnection(query).recover {
-        case NonFatal(e) =>
+        case NonFatal(e) ⇒
           connection.rollback()
           throw e
-      }.map { result =>
+      }.map { result ⇒
         connection.rollback()
         result
       }
@@ -158,16 +158,16 @@ class Database protected(connectionProvider: ConnectionProvider) {
     query.execute()(RestrictedConnection(connection), ec)
   }
 
-  private def executeInternal[Result](settings: ConnectionSettings)(op: Connection => Future[Result])(implicit ec: ExecutionContext): Future[Result] = {
-    connectionProvider.openConnection(settings).map { connection =>
+  private def executeInternal[Result](settings: ConnectionSettings)(op: Connection ⇒ Future[Result])(implicit ec: ExecutionContext): Future[Result] = {
+    connectionProvider.openConnection(settings).map { connection ⇒
       connection.setAutoCommit(false)
       connection
-    }.flatMap { connection =>
+    }.flatMap { connection ⇒
       op(connection).recover {
-        case NonFatal(e) =>
+        case NonFatal(e) ⇒
           connection.close()
           throw e
-      }.map { result =>
+      }.map { result ⇒
         connection.close()
         result
       }

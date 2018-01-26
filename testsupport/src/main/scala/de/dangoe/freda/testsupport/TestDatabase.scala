@@ -27,7 +27,7 @@ import scala.concurrent.duration.DurationDouble
 
 trait TestDatabase {
 
-  protected def withDatabase(initialization: Database => Future[Unit])(op: Database => Any): Unit = {
+  protected def withDatabase(initialization: Database ⇒ Future[Unit])(op: Database ⇒ Any): Unit = {
     Class.forName("org.hsqldb.jdbcDriver")
 
     val uuid = UUID.randomUUID().toString

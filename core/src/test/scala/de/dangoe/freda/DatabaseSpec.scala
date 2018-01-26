@@ -35,7 +35,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
   "Execution of a 'WithConnection'-instance" should {
 
-    behave like defaultExecutionBehaviour(_.withConnection(_ => "Result"), ReadWriteConnection)
+    behave like defaultExecutionBehaviour(_.withConnection(_ ⇒ "Result"), ReadWriteConnection)
   }
 
   "Execution of an arbitrary query" should {
@@ -47,7 +47,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(database.execute(aSuccessfulQuery)) { _ =>
+      whenReady(database.execute(aSuccessfulQuery)) { _ ⇒
         (connection.commit _).verify().once()
       }
     }
@@ -57,10 +57,10 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(database.execute(aFailedQuery).failed) { _ =>
+      whenReady(database.execute(aFailedQuery).failed) { _ ⇒
         (connection.commit _).verify().never()
         //noinspection ConvertibleToMethodValue
-        (connection.rollback _: () => Unit).verify().once()
+        (connection.rollback _: () ⇒ Unit).verify().once()
       }
     }
 
@@ -69,16 +69,16 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(database.execute(aSuccessfulQuery)) { _ =>
+      whenReady(database.execute(aSuccessfulQuery)) { _ ⇒
         //noinspection ConvertibleToMethodValue
-        (connection.rollback _: () => Unit).verify().never()
+        (connection.rollback _: () ⇒ Unit).verify().never()
       }
     }
   }
 
   "Read only execution of a 'WithConnection'-instance" should {
 
-    behave like defaultExecutionBehaviour(_.withConnectionReadOnly(_ => "Result"), ReadOnlyConnection)
+    behave like defaultExecutionBehaviour(_.withConnectionReadOnly(_ ⇒ "Result"), ReadOnlyConnection)
   }
 
   "Read only execution of an arbitrary query" should {
@@ -90,7 +90,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(database.executeReadOnly(aSuccessfulQuery)) { _ =>
+      whenReady(database.executeReadOnly(aSuccessfulQuery)) { _ ⇒
         (connection.commit _).verify().never()
       }
     }
@@ -100,21 +100,21 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(database.executeReadOnly(aSuccessfulQuery)) { _ =>
+      whenReady(database.executeReadOnly(aSuccessfulQuery)) { _ ⇒
         //noinspection ConvertibleToMethodValue
-        (connection.rollback _: () => Unit).verify().once()
+        (connection.rollback _: () ⇒ Unit).verify().once()
       }
     }
   }
 
-  private def defaultExecutionBehaviour[S](op: Database => Future[S], expectedConnectionSettings: ConnectionSettings): Unit = {
+  private def defaultExecutionBehaviour[S](op: Database ⇒ Future[S], expectedConnectionSettings: ConnectionSettings): Unit = {
 
     "force 'autoCommit=false'." in {
       val connection = stub[Connection]
 
       val database = new TestDatabase(connection)
 
-      whenReady(op(database)) { _ =>
+      whenReady(op(database)) { _ ⇒
         (connection.setAutoCommit _).verify(false).once()
       }
     }
@@ -124,7 +124,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(op(database)) { _ =>
+      whenReady(op(database)) { _ ⇒
         (connection.close _).verify().once()
       }
     }
@@ -134,7 +134,7 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
 
       val database = new TestDatabase(connection)
 
-      whenReady(op(database).map(_ => throw new IllegalStateException()).failed) { _ =>
+      whenReady(op(database).map(_ ⇒ throw new IllegalStateException()).failed) { _ ⇒
         (connection.close _).verify().once()
       }
     }
@@ -149,13 +149,13 @@ class DatabaseSpec extends WordSpec with Matchers with MockFactory with ScalaFut
         }
       }
 
-      whenReady(op(Database(connectionProvider))) { _ =>
+      whenReady(op(Database(connectionProvider))) { _ ⇒
         connectionSetttings shouldBe Some(expectedConnectionSettings)
       }
     }
   }
 
-  private class TestDatabase(connectionFactory: => Connection = stub[Connection]) extends Database(new ConnectionProvider {
+  private class TestDatabase(connectionFactory: ⇒ Connection = stub[Connection]) extends Database(new ConnectionProvider {
     override def openConnection(settings: ConnectionSettings)(implicit ec: ExecutionContext): Future[Connection] = Future.successful(connectionFactory)
   })
 }

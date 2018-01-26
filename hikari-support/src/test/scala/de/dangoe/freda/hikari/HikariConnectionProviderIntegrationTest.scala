@@ -32,16 +32,16 @@ import scala.concurrent.{Await, Future}
 class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers with ScalaFutures with TestDatabase {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
-  private implicit val futureTimeout = PatienceConfig(Span(30, Seconds), Span(50, Milliseconds))
+  private implicit val futureTimeout = PatienceConfig(Span(1, Minute), Span(150, Milliseconds))
 
   private val connectionTimeout = 5.seconds
 
-  private val testDatabaseInitialization: Database => Future[Unit] = {
+  private val testDatabaseInitialization: Database ⇒ Future[Unit] = {
     _.withConnection(_.prepareStatement("create table test (id bigint identity primary key, uuid uuid)").execute())
   }
 
   "Read only execution of an insert query" must "fail." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val uuid = UUID.randomUUID()
 
       whenReady(database.withConnectionReadOnly(insertOneRow(uuid)).failed) {
@@ -51,9 +51,9 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
   }
 
   "Blocking queries" should "cause a connection timeout." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val slowQueryFactory = slowQuery[String](connectionTimeout * 2) _
-      val queries = (1 to 3).map(_ => database.executeReadOnly(slowQueryFactory("Result")))
+      val queries = (1 to 3).map(_ ⇒ database.executeReadOnly(slowQueryFactory("Result")))
 
       whenReady(Future.sequence(queries).failed) {
         _ shouldBe a[SQLTransientConnectionException]
@@ -62,13 +62,13 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
   }
 
   "Many concurrent but fast queries" should "be executed correctly." in {
-    withDatabase(testDatabaseInitialization) { implicit database =>
+    withDatabase(testDatabaseInitialization) { implicit database ⇒
       val insertCount = 1000
       val uuid = UUID.randomUUID()
 
-      val inserts = (1 to insertCount).map(_ => database.withConnection(insertOneRow(uuid)))
+      val inserts = (1 to insertCount).map(_ ⇒ database.withConnection(insertOneRow(uuid)))
 
-      whenReady(Future.sequence(inserts)) { insertResult =>
+      whenReady(Future.sequence(inserts)) { insertResult ⇒
         insertResult.sum shouldBe insertCount
         executeCountRowsWithUuid(uuid) shouldBe insertCount
       }
@@ -76,37 +76,37 @@ class HikariConnectionProviderIntegrationTest extends FlatSpec with Matchers wit
   }
 
   "Mixed inserts and selects" should "be executed correctly." in {
-    withDatabase(testDatabaseInitialization) { implicit database =>
-      def execute(tuple: (ConnectionMode, Connection => Any)) = tuple match {
-        case (connectionMode, query) => connectionMode match {
-          case ReadWrite => database.withConnection(query)
-          case ReadOnly => database.withConnectionReadOnly(query)
+    withDatabase(testDatabaseInitialization) { implicit database ⇒
+      def execute(tuple: (ConnectionMode, Connection ⇒ Any)) = tuple match {
+        case (connectionMode, query) ⇒ connectionMode match {
+          case ReadWrite ⇒ database.withConnection(query)
+          case ReadOnly ⇒ database.withConnectionReadOnly(query)
         }
       }
 
       val insertCount = 1000
       val uuid = UUID.randomUUID()
 
-      val inserts = (1 to insertCount).map(_ => (ReadWrite, insertOneRow(uuid)))
-      val selects = (1 to insertCount).map(_ => (ReadOnly, countRowsWithUuid(uuid)))
+      val inserts = (1 to insertCount).map(_ ⇒ (ReadWrite, insertOneRow(uuid)))
+      val selects = (1 to insertCount).map(_ ⇒ (ReadOnly, countRowsWithUuid(uuid)))
 
-      val combined = inserts.zip(selects).flatMap(t => Seq(t._1, t._2))
+      val combined = inserts.zip(selects).flatMap(t ⇒ Seq(t._1, t._2))
 
-      whenReady(Future.sequence(combined.map(execute))) { _ =>
+      whenReady(Future.sequence(combined.map(execute))) { _ ⇒
         executeCountRowsWithUuid(uuid) shouldBe insertCount
       }
     }
   }
 
-  private def insertOneRow(uuid: UUID) = { connection: Connection =>
+  private def insertOneRow(uuid: UUID) = { connection: Connection ⇒
     connection.prepareStatement(s"insert into test (uuid) values ('$uuid')").executeUpdate()
   }
 
-  private def countRowsWithUuid(uuid: UUID) = { connection: Connection =>
+  private def countRowsWithUuid(uuid: UUID) = { connection: Connection ⇒
     connection.prepareStatement(s"select count(*) from test where uuid = '${uuid.toString}'").executeQuery()
   }
 
-  private def slowQuery[Result](duration: Duration)(result: Result): Query[Result] = Query { _ =>
+  private def slowQuery[Result](duration: Duration)(result: Result): Query[Result] = Query { _ ⇒
     Thread.sleep(duration.toMillis)
     result
   }

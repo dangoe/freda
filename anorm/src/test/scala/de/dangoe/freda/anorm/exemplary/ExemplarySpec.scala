@@ -31,33 +31,33 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val futureTimeout = PatienceConfig(Span(5, Seconds), Span(50, Milliseconds))
 
-  private val testDatabaseInitialization: Database => Future[Unit] = { database =>
+  private val testDatabaseInitialization: Database ⇒ Future[Unit] = { database ⇒
     for {
-      _ <- database.withConnection(_.prepareStatement("create table users (id bigint identity primary key, name varchar(64), created_at datetime not null)").execute())
-      _ <- database.withConnection(_.prepareStatement("create table accounts (user bigint primary key, password varchar(64) not null, created_at datetime not null)").execute())
+      _ ← database.withConnection(_.prepareStatement("create table users (id bigint identity primary key, name varchar(64), created_at datetime not null)").execute())
+      _ ← database.withConnection(_.prepareStatement("create table accounts (user bigint primary key, password varchar(64) not null, created_at datetime not null)").execute())
     } yield ()
   }
 
   "Toolkit" should "allow to execute a simple insert and select operation." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       whenReady {
         database.execute {
           for {
-            userId <- UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            user <- UserQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
+            userId ← UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            user ← UserQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
           } yield (userId, user)
         }
       } {
-        case (userId, user) =>
+        case (userId, user) ⇒
           (user.id, user.name) shouldBe(Some(userId), name)
       }
     }
   }
 
   it should "commit a transaction, if requested" in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       Await.result(database.execute(UserQueries.insert(name)), 5.seconds)
@@ -69,20 +69,20 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow to execute a simple insert, update and select operation." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
       val updatedName = createRandomName()
 
       whenReady {
         database.execute {
           for {
-            userId <- UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            updatedRows <- UserQueries.updateName(userId, updatedName)
-            user <- UserQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
+            userId ← UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            updatedRows ← UserQueries.updateName(userId, updatedName)
+            user ← UserQueries.findById(userId).getOrThrow(new NoSuchElementException(s"Failed to find user with id $userId"))
           } yield (userId, updatedRows, user)
         }
       } {
-        case (userId, updatedRows, user) =>
+        case (userId, updatedRows, user) ⇒
           updatedRows shouldBe 1
           (user.id, user.name) shouldBe(Some(userId), updatedName)
       }
@@ -90,13 +90,13 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow to filter within a for-comprehension." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       whenReady {
         database.execute {
           for {
-            maybeId <- UserQueries.insert(name)
+            maybeId ← UserQueries.insert(name)
             if maybeId.isEmpty
           } yield maybeId
         }.failed
@@ -107,14 +107,14 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow delete an existing row." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       whenReady {
         database.execute {
           for {
-            maybeId <- UserQueries.insert(name)
-            deletedRows <- UserQueries.delete(maybeId.get)
+            maybeId ← UserQueries.insert(name)
+            deletedRows ← UserQueries.delete(maybeId.get)
           } yield deletedRows
         }
       } {
@@ -124,7 +124,7 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "not fail, if a row to be deleted does not exist." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       whenReady {
         database.execute(UserQueries.delete(-1))
       } {
@@ -134,19 +134,19 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow to add several users and select all of them." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       whenReady {
         database.execute {
           for {
-            _ <- UserQueries.insert(name)
-            _ <- UserQueries.insert(name)
-            _ <- UserQueries.insert(name)
-            _ <- UserQueries.insert(name)
-            _ <- UserQueries.insert(name)
-            _ <- UserQueries.insert(name)
-            userCount <- UserQueries.findAllByName(name).map(_.length)
+            _ ← UserQueries.insert(name)
+            _ ← UserQueries.insert(name)
+            _ ← UserQueries.insert(name)
+            _ ← UserQueries.insert(name)
+            _ ← UserQueries.insert(name)
+            _ ← UserQueries.insert(name)
+            userCount ← UserQueries.findAllByName(name).map(_.length)
           } yield userCount
         }
       } {
@@ -156,26 +156,26 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow to perform joins." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       whenReady {
         database.execute {
           for {
-            userId <- UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
-            registeredUsers <- AccountQueries.registeredUsers
+            userId ← UserQueries.insert(name).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            _ ← AccountQueries.insert(userId, "fhewifgjhbfgQ")
+            registeredUsers ← AccountQueries.registeredUsers
           } yield (userId, registeredUsers)
         }
       } {
-        case (userId, registeredUsers) =>
-          registeredUsers.map(t => (t.id, t.name)) should contain only ((Some(userId), name))
+        case (userId, registeredUsers) ⇒
+          registeredUsers.map(t ⇒ (t.id, t.name)) should contain only ((Some(userId), name))
       }
     }
   }
 
   it should "not commit anything within a read only transaction." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       val name = createRandomName()
 
       Await.result(database.executeReadOnly(UserQueries.insert(name)), 5.seconds)
@@ -187,12 +187,12 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow to use simple aggregations." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       Await.result(
         database.execute {
           for {
-            userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
+            userId ← UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            _ ← AccountQueries.insert(userId, "fhewifgjhbfgQ")
           } yield ()
         },
         5.seconds
@@ -205,18 +205,18 @@ class ExemplarySpec extends FlatSpec with Matchers with ScalaFutures with TestDa
   }
 
   it should "allow to use complex aggreations." in {
-    withDatabase(testDatabaseInitialization) { database =>
+    withDatabase(testDatabaseInitialization) { database ⇒
       Await.result(
         database.execute {
           for {
-            userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
-            userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
-            userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
-            userId <- UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
-            _ <- AccountQueries.insert(userId, "fhewifgjhbfgQ")
+            userId ← UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            _ ← AccountQueries.insert(userId, "fhewifgjhbfgQ")
+            userId ← UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            _ ← AccountQueries.insert(userId, "fhewifgjhbfgQ")
+            userId ← UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            _ ← AccountQueries.insert(userId, "fhewifgjhbfgQ")
+            userId ← UserQueries.insert(createRandomName()).getOrThrow(new NoSuchElementException("Failed to insert user"))
+            _ ← AccountQueries.insert(userId, "fhewifgjhbfgQ")
           } yield ()
         },
         5.seconds

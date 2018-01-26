@@ -23,27 +23,27 @@ import de.dangoe.freda.anorm._
 
 object UserQueries {
 
-  def updateName(id: Long, name: String): Query[Int] = Query { implicit connection =>
+  def updateName(id: Long, name: String): Query[Int] = Query { implicit connection ⇒
     SQL"update users set name = $name where id = $id".executeUpdate()
   }
 
-  def insert(name: String): Query[Option[Long]] = Query { implicit connection =>
+  def insert(name: String): Query[Option[Long]] = Query { implicit connection ⇒
     SQL"insert into users (name, created_at) values ($name, ${Instant.now})".executeInsert()
   }
 
-  def delete(id: Long): Query[Int] = Query { implicit connection =>
+  def delete(id: Long): Query[Int] = Query { implicit connection ⇒
     SQL"delete from users where id = $id".executeUpdate()
   }
 
-  def findById(id: Long): Query[Option[User]] = Query { implicit connection =>
+  def findById(id: Long): Query[Option[User]] = Query { implicit connection ⇒
     SQL"select * from users where id = $id".selectAs[User]
   }.uniqueResultOpt
 
-  def findAllByName(name: String): Query[Seq[User]] = Query { implicit connection =>
+  def findAllByName(name: String): Query[Seq[User]] = Query { implicit connection ⇒
     SQL"select * from users where name = $name".selectAs[User]
   }
 
-  def all: Query[Seq[User]] = Query { implicit connection =>
+  def all: Query[Seq[User]] = Query { implicit connection ⇒
     SQL"select * from users".selectAs[User]
   }
 }

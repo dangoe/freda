@@ -36,7 +36,7 @@ class HikariConnectionProviderSpec extends WordSpec with Matchers with MockFacto
       val connection = stub[Connection]
       val connectionProvider = createHikariConnectionProvider(connection)
 
-      whenReady(connectionProvider.openConnection(ReadOnlyConnection)) { _ =>
+      whenReady(connectionProvider.openConnection(ReadOnlyConnection)) { _ ⇒
         (connection.setReadOnly _).verify(true).once()
       }
     }
@@ -45,16 +45,16 @@ class HikariConnectionProviderSpec extends WordSpec with Matchers with MockFacto
       val connection = stub[Connection]
       val connectionProvider = createHikariConnectionProvider(connection)
 
-      whenReady(connectionProvider.openConnection(ReadWriteConnection)) { _ =>
+      whenReady(connectionProvider.openConnection(ReadWriteConnection)) { _ ⇒
         (connection.setReadOnly _).verify(false).once()
       }
     }
   }
 
-  private def createHikariConnectionProvider(connection: => Connection): ConnectionProvider = {
+  private def createHikariConnectionProvider(connection: ⇒ Connection): ConnectionProvider = {
     val datasource = mock[DataSource]
     //noinspection ConvertibleToMethodValue
-    (datasource.getConnection _: () => Connection).expects().returns(connection)
+    (datasource.getConnection _: () ⇒ Connection).expects().returns(connection)
 
     new HikariConnectionProvider(stub[HikariConfig]) {
       override protected def createDataSource(config: HikariConfig): DataSource = datasource
